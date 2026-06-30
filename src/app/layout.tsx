@@ -3,11 +3,11 @@ import { Inter, Outfit } from "next/font/google";
 import "@/styles/globals.css";
 import QueryProvider from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import Navbar from "@/components/Navbar";
-import BottomNavigation from "@/components/BottomNavigation";
-import Drawer from "@/components/Drawer";
-import FAB from "@/components/FAB";
-import ToastContainer from "@/components/ToastContainer";
+import Navbar from "@/components/layout/Navbar";
+import BottomNavigation from "@/components/layout/BottomNavigation";
+import Drawer from "@/components/layout/Drawer";
+import FAB from "@/components/layout/FAB";
+import ToastContainer from "@/components/shared/ToastContainer";
 
 const inter = Inter({
   subsets: ["latin"],

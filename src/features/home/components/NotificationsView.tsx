@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useHomeData } from "../hooks/useHomeData";
-import { AlertSkeleton } from "@/components/Skeleton";
+import { AlertSkeleton } from "@/components/shared/Skeleton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Info, Heart, ShoppingCart } from "lucide-react";

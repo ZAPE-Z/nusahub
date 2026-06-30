@@ -24,7 +24,7 @@ export default function LandingPage() {
           NH
         </div>
         <h1 className="font-heading text-2xl font-bold text-text-primary">NusaHub</h1>
-        <span className="text-xs text-text-muted">Indonesia's AI-First Super App</span>
+        <span className="text-xs text-text-muted">Indonesia&apos;s AI-First Super App</span>
         <div className="w-12 h-1 bg-primary/10 rounded-full overflow-hidden mt-4">
           <div className="h-full bg-primary w-1/2 animate-[shimmer_1.5s_infinite_linear]" style={{
             backgroundImage: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)"

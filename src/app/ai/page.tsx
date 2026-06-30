@@ -16,7 +16,7 @@ export default function AIPlaceholderPage() {
         <CardContent className="p-4 flex items-center gap-3 text-left">
           <Sparkles className="h-5 w-5 text-secondary shrink-0" />
           <span className="text-[11px] text-text-muted leading-relaxed">
-            Sprint 2 will allow you to type prompts like "Pay 15,000 to Ibu Sri" to trigger mock actions.
+            Sprint 2 will allow you to type prompts like &quot;Pay 15,000 to Ibu Sri&quot; to trigger mock actions.
           </span>
         </CardContent>
       </Card>
