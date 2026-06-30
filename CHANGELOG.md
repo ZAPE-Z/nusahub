@@ -16,6 +16,7 @@ All notable changes to the NusaHub project will be documented in this file. This
 - AI memory trackers: `features.md`, `roadmap.md`, `sprints.md`, and `prd.md`.
 - AI rules skeletons: `ui-rules.md`, `security-rules.md`, and `testing-rules.md`.
 - RFC foundation directory `docs/09-rfc/` with 15 initial baseline RFC draft files using the approved template structure.
+- UX Blueprint and Design System files inside `docs/02-design/` (sitemap, IA, user flows, navigation system, design system, component library, screen inventory, interaction guidelines, and UI specs).
 
 ---
 

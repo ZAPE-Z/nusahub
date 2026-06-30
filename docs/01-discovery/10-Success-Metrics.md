@@ -1,29 +1,38 @@
-﻿# Success Metrics
+﻿# Success Metrics Framework
 
-## Purpose
-To list the Key Performance Indicators (KPIs) and North Star metrics used to evaluate NusaHub's success and market adoption.
+## Executive Summary
+This document defines the success metrics, Key Performance Indicators (KPIs), and North Star metric used to evaluate NusaHub's product market fit and operational efficiency. The framework focuses on user engagement, interaction efficiency, transaction speed, and merchant scaling (no code-level implementation metrics).
 
-## Scope
-Covers metrics across acquisition, engagement, merchant transaction value (GTV), retention, creator earnings, and system performance.
+## Main Analysis
+- **The North Star Metric**:
+  - **Daily Active Workflows (DAW)**: The number of completed cross-context workflows (e.g., chat checkout to logistics booking, AI-assisted bills payment) completed within the platform daily.
+- **Cohort Metrics**:
+  - **End-Users (Consumers)**:
+    - *Task Duration*: Time taken to complete a transaction (aiming for less than 60 seconds).
+    - *Storage Retention*: Platform retention rates on low-spec smartphones.
+  - **UMKM Merchants**:
+    - *Admin Time Reduction*: Hours saved daily from manual billing and payment checks.
+    - *Stock Error Rate*: Decrease in inventory discrepancies due to real-time syncing.
+  - **Creators**:
+    - *Direct Audience Volume*: Direct subscription and fan transactions completed inside communities.
+    - *Payout Efficiency*: Speed and fee metrics for creator monetization.
+- **Ecosystem Metrics**:
+  - **Mini App Onboarding**: Number of third-party widgets deployed.
+  - **Active AI Orchestrations**: Percentage of transactions completed via AI natural language interfaces.
 
-## Table of Contents
-- [1. North Star Metric](#1-north-star-metric)
-- [2. Engagement Metrics](#2-engagement-metrics)
-- [3. Commerce & Wallet Metrics](#3-commerce-&-wallet-metrics)
-- [4. Creator Economy Metrics](#4-creator-economy-metrics)
-- [5. Technical & Adoption KPIs](#5-technical-&-adoption-kpis)
+## Key Insights
+- **Focus on Action over Views**: Standard metrics like Pageviews or Daily Active Users (DAU) do not capture value. The North Star metric must focus on *completed workflows* to validate horizontal integration.
+- **Merchant Retention is Key**: Saving time for Ibu Sri is the primary indicator of merchant platform loyalty.
 
-## 1. North Star Metric
-*Placeholder: Detailed content for 1. North Star Metric.*
+## Decision Impact
+- **docs/03-product/PRD.md**: Success metrics are mapped directly to MVP analytics and transaction logging features.
+- **docs/05-development/**: Test suites and validation runbooks must track checkout execution time and data footprint.
 
-## 2. Engagement Metrics
-*Placeholder: Detailed content for 2. Engagement Metrics.*
+## Review Status
+- **Reviewer**: Product Manager (ChatGPT)
+- **Status**: Under Review
+- **Approval Date**: Pending
 
-## 3. Commerce & Wallet Metrics
-*Placeholder: Detailed content for 3. Commerce & Wallet Metrics.*
-
-## 4. Creator Economy Metrics
-*Placeholder: Detailed content for 4. Creator Economy Metrics.*
-
-## 5. Technical & Adoption KPIs
-*Placeholder: Detailed content for 5. Technical & Adoption KPIs.*
+## Related Documents
+- [01-Problem-Discovery.md](01-Problem-Discovery.md)
+- [09-Mission.md](09-Mission.md)

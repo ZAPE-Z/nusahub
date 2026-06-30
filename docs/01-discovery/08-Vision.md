@@ -1,29 +1,32 @@
-﻿# Product Vision
+﻿# Product Vision: NusaHub
 
-## Purpose
-To detail the long-term, inspirational goal and product vision of NusaHub as the premier AI-First Super App Platform for Indonesia.
+## Executive Summary
+This document defines the long-term, inspirational vision of NusaHub. NusaHub aims to serve as the unified digital gateway for Indonesia. By establishing an open horizontal super-app platform, NusaHub will simplify mobile access, support merchant digitalization, and empower creators, fostering a highly collaborative digital society.
 
-## Scope
-A forward-looking look at the 5-to-10-year platform evolution, community impact, and technology convergence.
+## Main Analysis
+- **Vision Statement**:
+  > **"One App. Infinite Possibilities."**
+- **Core Beliefs**:
+  - **Technology Must Be Inclusive**: Complex software must be translated into simple interfaces (like natural conversations) to allow everyone, regardless of tech literacy, to participate in the digital economy.
+  - **Ecosystems Must Remain Open**: Closed platform monopolies stifle innovation. An open horizontal runtime is essential to support local developers and regional services.
+- **Strategic Horizons**:
+  - **Horizon 1 (MVP Prototypes)**: Build the core super app shell (chat, feed, dummy wallet, AI assistant, marketplace, merchant tools) to validate the conversational workflow positioning.
+  - **Horizon 2 (Platform Growth)**: Expand API integrations, support real transaction gateways, and onboard initial local creator communities.
+  - **Horizon 3 (Open Ecosystem)**: Release the sandboxed Mini App SDK, permitting third-party developers to deploy custom widgets directly.
 
-## Table of Contents
-- [1. Long-Term Vision Statement](#1-long-term-vision-statement)
-- [2. Core Beliefs](#2-core-beliefs)
-- [3. Strategic Horizons](#3-strategic-horizons)
-- [4. Ecosystem Impact Goals](#4-ecosystem-impact-goals)
-- [5. Vision Alignment Guidance](#5-vision-alignment-guidance)
+## Key Insights
+- **AI-native Gateway**: Over the long term, natural language interaction (LUI) will replace icon-grid apps. NusaHub must design its shell to accommodate conversational orchestration.
+- **Horizontal Strategy**: Keeping the host app lightweight and utilizing sandboxed Mini Apps is the key to managing device limits on entry-spec phones.
 
-## 1. Long-Term Vision Statement
-*Placeholder: Detailed content for 1. Long-Term Vision Statement.*
+## Decision Impact
+- **docs/03-product/PRD.md**: Alignment check for MVP scopes and the future development roadmap.
+- **PROJECT_MANIFEST.md**: Syncs platform principles and values.
 
-## 2. Core Beliefs
-*Placeholder: Detailed content for 2. Core Beliefs.*
+## Review Status
+- **Reviewer**: Product Manager (ChatGPT)
+- **Status**: Under Review
+- **Approval Date**: Pending
 
-## 3. Strategic Horizons
-*Placeholder: Detailed content for 3. Strategic Horizons.*
-
-## 4. Ecosystem Impact Goals
-*Placeholder: Detailed content for 4. Ecosystem Impact Goals.*
-
-## 5. Vision Alignment Guidance
-*Placeholder: Detailed content for 5. Vision Alignment Guidance.*
+## Related Documents
+- [PROJECT_MANIFEST.md](../../PROJECT_MANIFEST.md)
+- [09-Mission.md](09-Mission.md)
