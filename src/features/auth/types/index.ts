@@ -1,10 +1,14 @@
+import { UserCapabilities } from "@/store/useAppStore";
+
 export interface User {
   id: string;
   email: string;
   name: string;
   handle: string;
   avatarUrl?: string;
-  role: "consumer" | "merchant" | "creator";
+  capabilities: UserCapabilities;
+  joinedDate?: string;
+  verificationStatus?: "verified" | "unverified" | "pending";
 }
 
 export interface AuthState {

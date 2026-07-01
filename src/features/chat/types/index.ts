@@ -1,3 +1,5 @@
+import { UserCapabilities } from "@/store/useAppStore";
+
 export interface ProductRef {
   id: string;
   title: string;
@@ -10,7 +12,7 @@ export interface Message {
   id: string;
   senderId: string;
   text: string;
-  timestamp: string; // ISO string or local readable string
+  timestamp: string;
   isRead: boolean;
   productRef?: ProductRef;
 }
@@ -20,7 +22,7 @@ export interface Participant {
   name: string;
   handle: string;
   avatarUrl?: string;
-  role: "consumer" | "merchant" | "creator";
+  capabilities: UserCapabilities;
 }
 
 export interface Conversation {

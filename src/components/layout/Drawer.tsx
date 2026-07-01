@@ -67,20 +67,64 @@ export default function Drawer() {
           </div>
         )}
 
-        <nav className="flex-1 flex flex-col gap-1">
+        <nav className="flex-1 flex flex-col gap-1 overflow-y-auto pr-1">
           {DRAWER_ITEMS.map((item) => {
             const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => toggleDrawer(false)}
-                className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-text-primary text-sm font-medium transition-all active:scale-98"
-              >
-                <Icon className="h-5 w-5 text-primary" />
-                <span>{item.label}</span>
-              </Link>
-            );
+            
+            // Get status of current capability from user object
+            const capabilities = user?.capabilities || {
+              consumer: "active",
+              merchant: "inactive",
+              creator: "inactive",
+              freelancer: "coming-soon",
+              mentor: "coming-soon",
+              organization: "coming-soon",
+              community: "coming-soon",
+              developer: "coming-soon",
+            };
+
+            let isEnabled = item.alwaysEnabled || false;
+            let statusText = "";
+
+            if (item.capabilityKey) {
+              const status = capabilities[item.capabilityKey];
+              isEnabled = status === "active";
+              if (status === "coming-soon") {
+                statusText = "SOON";
+              } else if (status === "inactive") {
+                statusText = "INACTIVE";
+              }
+            }
+
+            if (isEnabled) {
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => toggleDrawer(false)}
+                  className="flex items-center gap-3 p-2.5 rounded-md hover:bg-primary/10 text-text-primary text-sm font-medium transition-all active:scale-98"
+                >
+                  <Icon className="h-4.5 w-4.5 text-primary shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            } else {
+              return (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between p-2.5 rounded-md text-text-muted/50 text-sm font-medium cursor-not-allowed opacity-50 select-none"
+                  title={`Activate ${item.label} capability inside Profile`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon className="h-4.5 w-4.5 text-text-muted/30 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  <span className="text-[8px] font-bold text-secondary uppercase bg-secondary/5 px-1.5 py-0.5 rounded border border-secondary/15 shrink-0 scale-90">
+                    {statusText}
+                  </span>
+                </div>
+              );
+            }
           })}
 
           <hr className="my-4 border-text-muted/10" />

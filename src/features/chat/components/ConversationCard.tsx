@@ -51,12 +51,12 @@ export default function ConversationCard({
           <AvatarImage src={participant.avatarUrl} alt={participant.name} />
           <AvatarFallback>{participant.name[0]}</AvatarFallback>
         </Avatar>
-        {participant.role === "merchant" && (
+        {participant.capabilities?.merchant === "active" && (
           <span className="absolute -bottom-1 -right-1 bg-secondary text-white text-[9px] px-1 font-bold rounded-md uppercase scale-90 border border-surface shadow-low">
             Toko
           </span>
         )}
-        {participant.role === "creator" && (
+        {participant.capabilities?.creator === "active" && (
           <span className="absolute -bottom-1 -right-1 bg-primary text-white text-[9px] px-1 font-bold rounded-md uppercase scale-90 border border-surface shadow-low">
             Creator
           </span>

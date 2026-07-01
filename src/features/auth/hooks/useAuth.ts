@@ -31,7 +31,18 @@ export function useAuth() {
         email,
         name,
         handle: handle.replace("@", ""),
-        role: "consumer",
+        verificationStatus: "verified",
+        joinedDate: "July 2026",
+        capabilities: {
+          consumer: "active",
+          merchant: "inactive",
+          creator: "inactive",
+          freelancer: "coming-soon",
+          mentor: "coming-soon",
+          organization: "coming-soon",
+          community: "coming-soon",
+          developer: "coming-soon",
+        },
       };
       return newUser;
     },

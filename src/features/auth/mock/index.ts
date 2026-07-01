@@ -7,7 +7,18 @@ export const MOCK_USERS: User[] = [
     name: "Budi Santoso",
     handle: "budi",
     avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60",
-    role: "consumer"
+    verificationStatus: "verified",
+    joinedDate: "July 2026",
+    capabilities: {
+      consumer: "active",
+      merchant: "active",
+      creator: "active",
+      freelancer: "coming-soon",
+      mentor: "coming-soon",
+      organization: "coming-soon",
+      community: "coming-soon",
+      developer: "coming-soon",
+    },
   },
   {
     id: "user-2",
@@ -15,7 +26,18 @@ export const MOCK_USERS: User[] = [
     name: "Ibu Sri",
     handle: "ibusri",
     avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=60",
-    role: "merchant"
+    verificationStatus: "verified",
+    joinedDate: "May 2026",
+    capabilities: {
+      consumer: "active",
+      merchant: "active",
+      creator: "inactive",
+      freelancer: "coming-soon",
+      mentor: "coming-soon",
+      organization: "coming-soon",
+      community: "coming-soon",
+      developer: "coming-soon",
+    },
   },
   {
     id: "user-3",
@@ -23,6 +45,17 @@ export const MOCK_USERS: User[] = [
     name: "Andi Wijaya",
     handle: "andi",
     avatarUrl: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=60",
-    role: "creator"
-  }
+    verificationStatus: "verified",
+    joinedDate: "June 2026",
+    capabilities: {
+      consumer: "active",
+      merchant: "inactive",
+      creator: "active",
+      freelancer: "coming-soon",
+      mentor: "coming-soon",
+      organization: "coming-soon",
+      community: "coming-soon",
+      developer: "coming-soon",
+    },
+  },
 ];

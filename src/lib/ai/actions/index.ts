@@ -1,11 +1,13 @@
 import { useWalletStore } from "@/store/walletStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useToast } from "@/store/useToastStore";
+import { useAppStore } from "@/store/useAppStore";
 
 export interface AIActionStore {
   walletStore: typeof useWalletStore;
   workspaceStore: typeof useWorkspaceStore;
   toastStore: ReturnType<typeof useToast>;
+  appStore: typeof useAppStore;
 }
 
 export interface AIAction {
