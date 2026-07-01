@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useDeveloperStore } from "@/store/developerStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -27,17 +28,16 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function DeveloperView() {
-  const {
-    apiKeys,
-    miniApps,
-    logs,
-    generateApiKey,
-    regenerateApiKey,
-    revokeApiKey,
-    publishMiniApp,
-    addLog,
-  } = useDeveloperStore();
-  const { addLog: addGlobalLog } = useActivityStore();
+  const apiKeys = useDeveloperStore((state) => state.apiKeys);
+  const miniApps = useDeveloperStore((state) => state.miniApps);
+  const logs = useDeveloperStore((state) => state.logs);
+  const generateApiKey = useDeveloperStore((state) => state.generateApiKey);
+  const regenerateApiKey = useDeveloperStore((state) => state.regenerateApiKey);
+  const revokeApiKey = useDeveloperStore((state) => state.revokeApiKey);
+  const publishMiniApp = useDeveloperStore((state) => state.publishMiniApp);
+  const addLog = useDeveloperStore((state) => state.addLog);
+
+  const addGlobalLog = useActivityStore((state) => state.addLog);
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"keys" | "apps" | "logs">("keys");
@@ -121,15 +121,21 @@ export default function DeveloperView() {
   };
 
   // Search logic filters
-  const filteredKeys = apiKeys.filter((k) =>
-    k.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
 
-  const filteredApps = miniApps.filter(
-    (app) =>
-      app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredKeys = useMemo(() => {
+    return apiKeys.filter((k) =>
+      k.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [apiKeys, debouncedSearchQuery]);
+
+  const filteredApps = useMemo(() => {
+    return miniApps.filter(
+      (app) =>
+        app.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        app.description.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [miniApps, debouncedSearchQuery]);
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28">

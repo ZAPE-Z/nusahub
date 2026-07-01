@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useWalletStore, Transaction } from "@/store/walletStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { isDateInFilter } from "@/lib/dateUtils";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   Wallet,
   ArrowUpRight,
@@ -29,16 +30,15 @@ import {
 } from "@/components/shared";
 
 export default function WalletView() {
-  const {
-    balance,
-    availableBalance,
-    spendingThisMonth,
-    incomeThisMonth,
-    transactions,
-    updateBalance,
-    addTransaction,
-  } = useWalletStore();
-  const { addLog } = useActivityStore();
+  const balance = useWalletStore((state) => state.balance);
+  const availableBalance = useWalletStore((state) => state.availableBalance);
+  const spendingThisMonth = useWalletStore((state) => state.spendingThisMonth);
+  const incomeThisMonth = useWalletStore((state) => state.incomeThisMonth);
+  const transactions = useWalletStore((state) => state.transactions);
+  const updateBalance = useWalletStore((state) => state.updateBalance);
+  const addTransaction = useWalletStore((state) => state.addTransaction);
+
+  const addLog = useActivityStore((state) => state.addLog);
   const { toast } = useToast();
 
   // State controls
@@ -134,15 +134,19 @@ export default function WalletView() {
   };
 
   // Filters logic
-  const filteredTransactions = transactions.filter((tx) => {
-    const matchesSearch =
-      (tx.recipient?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (tx.sender?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (tx.note?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
 
-    if (!matchesSearch) return false;
-    return isDateInFilter(tx.timestamp, activeFilter === "month" ? "all" : activeFilter);
-  });
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((tx) => {
+      const matchesSearch =
+        (tx.recipient?.toLowerCase() || "").includes(debouncedSearchQuery.toLowerCase()) ||
+        (tx.sender?.toLowerCase() || "").includes(debouncedSearchQuery.toLowerCase()) ||
+        (tx.note?.toLowerCase() || "").includes(debouncedSearchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+      return isDateInFilter(tx.timestamp, activeFilter === "month" ? "all" : activeFilter);
+    });
+  }, [transactions, debouncedSearchQuery, activeFilter]);
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28">

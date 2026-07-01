@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useWorkspaceStore, Task, Note } from "@/store/workspaceStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -23,18 +24,17 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function WorkspaceView() {
-  const {
-    tasks,
-    notes,
-    addTask,
-    deleteTask,
-    updateTaskStatus,
-    addNote,
-    updateNote,
-    togglePinNote,
-    deleteNote,
-  } = useWorkspaceStore();
-  const { addLog } = useActivityStore();
+  const tasks = useWorkspaceStore((state) => state.tasks);
+  const notes = useWorkspaceStore((state) => state.notes);
+  const addTask = useWorkspaceStore((state) => state.addTask);
+  const deleteTask = useWorkspaceStore((state) => state.deleteTask);
+  const updateTaskStatus = useWorkspaceStore((state) => state.updateTaskStatus);
+  const addNote = useWorkspaceStore((state) => state.addNote);
+  const updateNote = useWorkspaceStore((state) => state.updateNote);
+  const togglePinNote = useWorkspaceStore((state) => state.togglePinNote);
+  const deleteNote = useWorkspaceStore((state) => state.deleteNote);
+
+  const addLog = useActivityStore((state) => state.addLog);
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"tasks" | "notes" | "calendar">("tasks");
@@ -147,15 +147,21 @@ export default function WorkspaceView() {
   };
 
   // Filter lists based on SearchBar query
-  const filteredTasks = tasks.filter((t) =>
-    t.text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
 
-  const filteredNotes = notes.filter(
-    (n) =>
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((t) =>
+      t.text.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [tasks, debouncedSearchQuery]);
+
+  const filteredNotes = useMemo(() => {
+    return notes.filter(
+      (n) =>
+        n.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        n.content.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [notes, debouncedSearchQuery]);
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28">

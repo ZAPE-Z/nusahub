@@ -16,7 +16,7 @@ interface ConversationCardProps {
   onSelect: () => void;
 }
 
-export default function ConversationCard({
+function ConversationCard({
   conversation,
   isActive,
   onSelect,
@@ -128,3 +128,5 @@ export default function ConversationCard({
     </>
   );
 }
+
+export default React.memo(ConversationCard);

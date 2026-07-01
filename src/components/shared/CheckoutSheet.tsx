@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useWalletStore } from "@/store/walletStore";
 import { useMerchantStore } from "@/store/merchantStore";
 import { useFeedStore } from "@/store/feedStore";
@@ -347,9 +348,11 @@ export default function CheckoutSheet({
                     {/* Item Card */}
                     <div className="flex items-center gap-3.5 p-3.5 bg-background border border-text-muted/10 rounded-lg">
                       {product.imageUrl && (
-                        <img
+                        <Image
                           src={product.imageUrl}
                           alt={product.title}
+                          width={56}
+                          height={56}
                           className="w-14 h-14 rounded-md object-cover border border-text-muted/10 shrink-0"
                         />
                       )}

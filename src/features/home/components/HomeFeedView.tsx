@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useHomeData } from "../hooks/useHomeData";
 import { useFeedStore } from "@/store/feedStore";
 import { useActivityStore, ActivityLog } from "@/store/activityStore";
@@ -27,16 +28,23 @@ import { useToast } from "@/store/useToastStore";
 import {
   SearchBar,
   BottomSheet,
-  EmptySearch,
-  EmptyConversation,
-} from "@/components/shared";
+import { useFeedStore } from "@/store/feedStore";
+import { useActivityStore, ActivityLog } from "@/store/activityStore";
+import { useToast } from "@/store/useToastStore";
+import { SearchBar, BottomSheet, EmptySearch, EmptyConversation } from "@/components/shared";
 import { staggerContainer, staggerItem, fadeIn } from "@/lib/animations";
 import { isDateInFilter } from "@/lib/dateUtils";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useMemo } from "react";
 
 export default function HomeFeedView() {
   const { posts, likePost } = useHomeData();
-  const { likedPostIds, addComment, deleteComment } = useFeedStore();
-  const { logs, addLog, clearLogs } = useActivityStore();
+  const likedPostIds = useFeedStore((state) => state.likedPostIds);
+  const addComment = useFeedStore((state) => state.addComment);
+  const deleteComment = useFeedStore((state) => state.deleteComment);
+  const logs = useActivityStore((state) => state.logs);
+  const addLog = useActivityStore((state) => state.addLog);
+  const clearLogs = useActivityStore((state) => state.clearLogs);
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"feed" | "timeline">("feed");
@@ -76,13 +84,20 @@ export default function HomeFeedView() {
     toast("Comment Deleted", "Your comment has been deleted", "default");
   };
 
-  const activePost = posts.find((p) => p.id === activeCommentPostId);
-  const filteredPosts = posts.filter(
-    (post) =>
-      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.creatorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.creatorHandle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const activePost = useMemo(() => {
+    return posts.find((p) => p.id === activeCommentPostId);
+  }, [posts, activeCommentPostId]);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
+
+  const filteredPosts = useMemo(() => {
+    return posts.filter(
+      (post) =>
+        post.content.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        post.creatorName.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        post.creatorHandle.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [posts, debouncedSearchQuery]);
 
   const getActivityIcon = (type: ActivityLog["type"]) => {
     switch (type) {
@@ -203,9 +218,11 @@ export default function HomeFeedView() {
                           {post.productRef && (
                             <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200/60 rounded-xl dark:bg-zinc-900/40 dark:border-zinc-800/80">
                               {post.productRef.imageUrl && (
-                                <img
+                                <Image
                                   src={post.productRef.imageUrl}
                                   alt={post.productRef.title}
+                                  width={48}
+                                  height={48}
                                   className="w-12 h-12 rounded-lg object-cover border border-zinc-200 dark:border-zinc-800"
                                 />
                               )}

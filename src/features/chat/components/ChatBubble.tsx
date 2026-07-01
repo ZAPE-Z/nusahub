@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Message, ProductRef } from "../types";
 import { formatMessageText } from "@/lib/chat/messageFormatter";
 import { formatShortTime } from "@/lib/chat/dateFormatter";
@@ -15,7 +16,7 @@ interface ChatBubbleProps {
   onReplyMessage?: () => void;
 }
 
-export default function ChatBubble({
+function ChatBubble({
   message,
   isSelf,
   onBuyProduct,
@@ -85,9 +86,11 @@ export default function ChatBubble({
         {message.productRef && (
           <div className="mt-3 p-2 bg-surface text-text-primary border border-text-muted/10 rounded-md flex flex-col gap-2 w-56">
             {message.productRef.imageUrl && (
-              <img
+              <Image
                 src={message.productRef.imageUrl}
                 alt={message.productRef.title}
+                width={224}
+                height={112}
                 className="w-full h-28 object-cover rounded-md border border-text-muted/5"
               />
             )}
@@ -136,3 +139,5 @@ export default function ChatBubble({
     </div>
   );
 }
+
+export default React.memo(ChatBubble);

@@ -19,7 +19,7 @@ export interface DashboardCardProps {
   onClick?: () => void;
 }
 
-export default function DashboardCard({
+function DashboardCard({
   title,
   subtitle,
   icon,
@@ -108,3 +108,5 @@ export default function DashboardCard({
     </CardWrapper>
   );
 }
+
+export default React.memo(DashboardCard);

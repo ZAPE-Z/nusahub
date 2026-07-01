@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useCommunityStore, Community } from "@/store/communityStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -23,8 +24,14 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function CommunityView() {
-  const { communities, joinedIds, posts, joinCommunity, leaveCommunity, addPost } = useCommunityStore();
-  const { addLog } = useActivityStore();
+  const communities = useCommunityStore((state) => state.communities);
+  const joinedIds = useCommunityStore((state) => state.joinedIds);
+  const posts = useCommunityStore((state) => state.posts);
+  const joinCommunity = useCommunityStore((state) => state.joinCommunity);
+  const leaveCommunity = useCommunityStore((state) => state.leaveCommunity);
+  const addPost = useCommunityStore((state) => state.addPost);
+
+  const addLog = useActivityStore((state) => state.addLog);
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"directory" | "feed">("directory");
@@ -58,17 +65,28 @@ export default function CommunityView() {
   };
 
   // Filter lists based on SearchBar input
-  const filteredCommunities = communities.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
 
-  const joinedCommunities = filteredCommunities.filter((c) => joinedIds.includes(c.id));
-  const trendingCommunities = filteredCommunities.filter((c) => !joinedIds.includes(c.id));
+  const filteredCommunities = useMemo(() => {
+    return communities.filter(
+      (c) =>
+        c.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        c.description.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [communities, debouncedSearchQuery]);
+
+  const joinedCommunities = useMemo(() => {
+    return filteredCommunities.filter((c) => joinedIds.includes(c.id));
+  }, [filteredCommunities, joinedIds]);
+
+  const trendingCommunities = useMemo(() => {
+    return filteredCommunities.filter((c) => !joinedIds.includes(c.id));
+  }, [filteredCommunities, joinedIds]);
 
   // Actual joined list for Chat select dropdown (unfiltered by search query)
-  const actualJoinedCommunities = communities.filter((c) => joinedIds.includes(c.id));
+  const actualJoinedCommunities = useMemo(() => {
+    return communities.filter((c) => joinedIds.includes(c.id));
+  }, [communities, joinedIds]);
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28">

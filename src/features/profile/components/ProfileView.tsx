@@ -41,8 +41,8 @@ export default function ProfileView() {
   const user = useAppStore((state) => mounted ? state.user : null);
   const { toast } = useToast();
 
-  const walletStore = useWalletStore();
-  const workspaceStore = useWorkspaceStore();
+  const balance = useWalletStore((state) => state.balance);
+  const tasksCount = useWorkspaceStore((state) => state.tasks.length);
   const { logs } = useActivityStore();
 
   if (!mounted || !user) return null;
@@ -97,7 +97,7 @@ export default function ProfileView() {
       title: "Wallet Dashboard",
       desc: "Simulate deposits, transfers, and transactions ledger.",
       status: "active" as CapabilityStatus,
-      stat: `Rp ${walletStore.balance.toLocaleString("id-ID")}`,
+      stat: `Rp ${balance.toLocaleString("id-ID")}`,
       btnLabel: "Open Wallet",
       href: "/wallet",
       icon: Wallet,
@@ -108,7 +108,7 @@ export default function ProfileView() {
       title: "Workspace Hub",
       desc: "Check active workflow tasks and personal note document grids.",
       status: "active" as CapabilityStatus,
-      stat: `${workspaceStore.tasks.length} Active Tasks`,
+      stat: `${tasksCount} Active Tasks`,
       btnLabel: "Open Workspace",
       href: "/workspace",
       icon: Briefcase,

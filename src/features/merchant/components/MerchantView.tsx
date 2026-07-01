@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import { useMerchantStore, MerchantProduct } from "@/store/merchantStore";
 import { useFeedStore } from "@/store/feedStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -75,9 +77,17 @@ const CustomDialog = ({
 );
 
 export default function MerchantView() {
-  const { products, orders, revenue, visitors, addProduct, editProduct, deleteProduct, shipOrder } = useMerchantStore();
-  const { addPost } = useFeedStore();
-  const { addLog } = useActivityStore();
+  const products = useMerchantStore((state) => state.products);
+  const orders = useMerchantStore((state) => state.orders);
+  const revenue = useMerchantStore((state) => state.revenue);
+  const visitors = useMerchantStore((state) => state.visitors);
+  const addProduct = useMerchantStore((state) => state.addProduct);
+  const editProduct = useMerchantStore((state) => state.editProduct);
+  const deleteProduct = useMerchantStore((state) => state.deleteProduct);
+  const shipOrder = useMerchantStore((state) => state.shipOrder);
+
+  const addPost = useFeedStore((state) => state.addPost);
+  const addLog = useActivityStore((state) => state.addLog);
   const { toast } = useToast();
 
   // Tab control
@@ -183,11 +193,18 @@ export default function MerchantView() {
   };
 
   const bestSeller = products[0]?.title || "Spicy Tempeh Crisps";
-  const lowStockProducts = products.filter((p) => p.stock < 15);
 
-  const filteredProducts = products.filter((prod) =>
-    prod.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const lowStockProducts = useMemo(() => {
+    return products.filter((p) => p.stock < 15);
+  }, [products]);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((prod) =>
+      prod.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [products, debouncedSearchQuery]);
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28">
@@ -364,9 +381,11 @@ export default function MerchantView() {
                 {filteredProducts.map((prod) => (
                   <DashboardCard key={prod.id} className="overflow-hidden p-0 flex">
                     {prod.imageUrl && (
-                      <img
+                      <Image
                         src={prod.imageUrl}
                         alt={prod.title}
+                        width={80}
+                        height={80}
                         className="w-20 object-cover border-r border-zinc-200 dark:border-zinc-850 shrink-0"
                       />
                     )}
