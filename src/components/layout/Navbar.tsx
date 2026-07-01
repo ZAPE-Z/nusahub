@@ -3,19 +3,31 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
+import { useChatStore } from "@/store/chatStore";
 import { ChevronLeft, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import ConversationHeader from "@/features/chat/components/ConversationHeader";
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const user = useAppStore((state) => state.user);
   const toggleDrawer = useAppStore((state) => state.toggleDrawer);
+  const activeChatId = useChatStore((state) => state.activeChatId);
 
   const isAuthPage = [ROUTES.login, ROUTES.register, ROUTES.forgotPassword, "/"].includes(pathname);
   if (isAuthPage) return null;
+
+  // Render chat room details header if we have an active room on the chats path
+  if (pathname === "/chats" && activeChatId) {
+    return (
+      <header className="fixed top-0 left-0 right-0 h-14 bg-surface border-b border-text-muted/10 flex items-center justify-between px-4 z-40 max-w-[768px] mx-auto shadow-low">
+        <ConversationHeader chatId={activeChatId} />
+      </header>
+    );
+  }
 
   const showBack = ![ROUTES.home, "/chats", "/ai", "/workspace", "/profile"].includes(pathname);
   
@@ -71,3 +83,4 @@ export default function Navbar() {
     </header>
   );
 }
+

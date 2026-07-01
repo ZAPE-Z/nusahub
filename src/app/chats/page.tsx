@@ -1,25 +1,39 @@
-import React from "react";
-import { MessageSquare, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+"use client";
 
-export default function ChatsPlaceholderPage() {
+import React, { Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useChatStore } from "@/store/chatStore";
+import ChatsListView from "@/features/chat/components/ChatsListView";
+import ChatRoomView from "@/features/chat/components/ChatRoomView";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
+
+function ChatsContent() {
+  const searchParams = useSearchParams();
+  const activeChatId = searchParams.get("id");
+  const setActiveChatId = useChatStore((state) => state.setActiveChatId);
+
+  // Sync search parameter changes with our global chat store
+  useEffect(() => {
+    setActiveChatId(activeChatId);
+  }, [activeChatId, setActiveChatId]);
+
+  if (activeChatId) {
+    return <ChatRoomView chatId={activeChatId} />;
+  }
+
+  return <ChatsListView />;
+}
+
+export default function ChatsPage() {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh] gap-4">
-      <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
-        <MessageSquare className="h-8 w-8" />
-      </div>
-      <h2 className="font-heading text-lg font-bold text-text-primary">Chats Module</h2>
-      <p className="text-xs text-text-muted max-w-xs leading-relaxed">
-        Real-time conversational channels and embedded payment cards are scheduled for Sprint 2.
-      </p>
-      <Card className="mt-4 max-w-xs border-dashed">
-        <CardContent className="p-4 flex items-center gap-3 text-left">
-          <ArrowRight className="h-5 w-5 text-secondary shrink-0" />
-          <span className="text-[11px] text-text-muted leading-relaxed">
-            Sprint 2 will unlock chat rooms with inline checkout capabilities for verified catalogs.
-          </span>
-        </CardContent>
-      </Card>
-    </div>
+    <ErrorBoundary>
+      <Suspense fallback={
+        <div className="flex items-center justify-center p-8 min-h-[60vh] text-xs text-text-muted">
+          Loading conversation interface...
+        </div>
+      }>
+        <ChatsContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
