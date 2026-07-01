@@ -13,7 +13,13 @@ import ConversationHeader from "@/features/chat/components/ConversationHeader";
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const user = useAppStore((state) => state.user);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = useAppStore((state) => mounted ? state.user : null);
   const toggleDrawer = useAppStore((state) => state.toggleDrawer);
   const activeChatId = useChatStore((state) => state.activeChatId);
 

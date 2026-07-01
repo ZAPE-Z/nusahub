@@ -31,6 +31,29 @@ export default function BottomSheet({
 }: BottomSheetProps) {
   const controls = useAnimation();
   const backdropRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+
+  // Track and restore focus on open/close
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      const timer = setTimeout(() => {
+        const focusable = sheetRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable && focusable.length > 0) {
+          (focusable[0] as HTMLElement).focus();
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+    return () => {
+      if (isOpen && previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [isOpen]);
 
   // Handle ESC key press
   useEffect(() => {
@@ -68,6 +91,31 @@ export default function BottomSheet({
     }
   };
 
+  // Keyboard navigation focus trap
+  const handleKeyDownTrap = (e: React.KeyboardEvent) => {
+    if (e.key === "Tab") {
+      const focusable = sheetRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
+
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          last.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === last) {
+          first.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -83,6 +131,11 @@ export default function BottomSheet({
 
       {/* Bottom Sheet Drawer */}
       <motion.div
+        ref={sheetRef}
+        onKeyDown={handleKeyDownTrap}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? "sheet-title" : undefined}
         custom={maxHeight}
         variants={slideUp}
         initial="hidden"
@@ -113,7 +166,7 @@ export default function BottomSheet({
           <div className="flex items-center justify-between pb-3 border-b border-text-muted/5">
             {title ? (
               typeof title === "string" ? (
-                <h3 className="font-heading text-base font-bold text-text-primary dark:text-zinc-100">
+                <h3 id="sheet-title" className="font-heading text-base font-bold text-text-primary dark:text-zinc-100">
                   {title}
                 </h3>
               ) : (

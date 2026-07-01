@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, AlertCircle, CheckCircle2, Info, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,6 +33,30 @@ export default function ConfirmationDialog({
   closeOnBackdropClick = true,
 }: ConfirmationDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Track and restore focus on open/close
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      // Small timeout to allow animation and rendering to complete
+      const timer = setTimeout(() => {
+        const focusable = containerRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable && focusable.length > 0) {
+          (focusable[0] as HTMLElement).focus();
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+    return () => {
+      if (isOpen && previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [isOpen]);
 
   // ESC key listener
   useEffect(() => {
@@ -68,6 +90,31 @@ export default function ConfirmationDialog({
       console.error("Confirmation error:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Keyboard navigation focus trap
+  const handleKeyDownTrap = (e: React.KeyboardEvent) => {
+    if (e.key === "Tab") {
+      const focusable = containerRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
+
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          last.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === last) {
+          first.focus();
+          e.preventDefault();
+        }
+      }
     }
   };
 
@@ -120,9 +167,19 @@ export default function ConfirmationDialog({
         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] transition-all"
       />
 
-      {/* Dialog Frame */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Dialog Frame Wrapper */}
+      <div 
+        onClick={closeOnBackdropClick && !isLoading ? onClose : undefined}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
         <motion.div
+          ref={containerRef}
+          onClick={(e) => e.stopPropagation()} // Stop click propagation to backdrop wrapper
+          onKeyDown={handleKeyDownTrap}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dialog-title"
+          aria-describedby="dialog-desc"
           variants={scaleIn}
           initial="hidden"
           animate="visible"
@@ -138,6 +195,7 @@ export default function ConfirmationDialog({
           {!isLoading && (
             <button
               onClick={onClose}
+              aria-label="Close dialog"
               className="absolute right-4 top-4 rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-900 dark:hover:text-zinc-300 transition-colors"
             >
               <X className="h-4 w-4" />
@@ -152,10 +210,10 @@ export default function ConfirmationDialog({
 
             {/* Typography Content */}
             <div className="flex-1 space-y-2.5">
-              <h3 className="font-heading text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
+              <h3 id="dialog-title" className="font-heading text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
                 {title}
               </h3>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              <div id="dialog-desc" className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 {description}
               </div>
             </div>

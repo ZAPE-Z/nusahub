@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${outfit.variable} antialiased min-h-screen bg-background text-text-primary`}>
+      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased min-h-screen bg-background text-text-primary`}>
         <QueryProvider>
           <ThemeProvider
             attribute="class"

@@ -32,14 +32,20 @@ import {
 
 export default function ProfileView() {
   const router = useRouter();
-  const user = useAppStore((state) => state.user);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = useAppStore((state) => mounted ? state.user : null);
   const { toast } = useToast();
 
   const walletStore = useWalletStore();
   const workspaceStore = useWorkspaceStore();
   const { logs } = useActivityStore();
 
-  if (!user) return null;
+  if (!mounted || !user) return null;
 
   const caps = user.capabilities;
 

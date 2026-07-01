@@ -31,6 +31,7 @@ import {
   EmptyConversation,
 } from "@/components/shared";
 import { staggerContainer, staggerItem, fadeIn } from "@/lib/animations";
+import { isDateInFilter } from "@/lib/dateUtils";
 
 export default function HomeFeedView() {
   const { posts, likePost } = useHomeData();
@@ -42,6 +43,7 @@ export default function HomeFeedView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState("");
+  const [timelineFilter, setTimelineFilter] = useState<"all" | "today" | "week">("all");
 
   const handleBuy = (title: string) => {
     toast("Redirect to chat", `Opening chat thread with merchant selling ${title}...`, "default");
@@ -266,53 +268,73 @@ export default function HomeFeedView() {
             {/* Timeline header actions */}
             <div className="flex justify-between items-center px-1">
               <span className="text-[11px] font-bold text-zinc-450 uppercase tracking-wider">System Event Ledger</span>
-              {logs.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearLogs}
-                  className="h-7 text-[10px] px-2.5 flex items-center gap-1 text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20"
-                >
-                  <Trash className="h-3 w-3" />
-                  <span>Clear Ledger</span>
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {(["all", "today", "week"] as const).map((filt) => (
+                    <button
+                      key={filt}
+                      onClick={() => setTimelineFilter(filt)}
+                      className={cn(
+                        "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-all",
+                        timelineFilter === filt
+                          ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 shadow-sm"
+                          : "bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-450 dark:hover:bg-zinc-900"
+                      )}
+                    >
+                      {filt}
+                    </button>
+                  ))}
+                </div>
+                {logs.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearLogs}
+                    className="h-7 text-[10px] px-2.5 flex items-center gap-1 text-red-655 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  >
+                    <Trash className="h-3 w-3" />
+                    <span>Clear Ledger</span>
+                  </Button>
+                )}
+              </div>
             </div>
 
-            {logs.length === 0 ? (
+            {logs.filter((log) => isDateInFilter(log.timestamp, timelineFilter)).length === 0 ? (
               <EmptyConversation
                 title="Activity ledger is clean"
                 description="Any modifications you perform across capabilities will show up chronologically here."
               />
             ) : (
               <div className="relative border-l border-zinc-200 dark:border-zinc-800 ml-3 pl-5 space-y-5">
-                {logs.map((log) => (
-                  <div key={log.id} className="relative">
-                    {/* Circle marker with icon */}
-                    <div
-                      className={cn(
-                        "absolute -left-[30px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-white dark:border-zinc-950 shadow-sm",
-                        getActivityBg(log.type)
-                      )}
-                    >
-                      {getActivityIcon(log.type)}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                          {log.type} Activity
-                        </span>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
-                          {log.timestamp}
-                        </span>
+                {logs
+                  .filter((log) => isDateInFilter(log.timestamp, timelineFilter))
+                  .map((log) => (
+                    <div key={log.id} className="relative">
+                      {/* Circle marker with icon */}
+                      <div
+                        className={cn(
+                          "absolute -left-[30px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-white dark:border-zinc-950 shadow-sm",
+                          getActivityBg(log.type)
+                        )}
+                      >
+                        {getActivityIcon(log.type)}
                       </div>
-                      <p className="text-xs text-zinc-750 dark:text-zinc-300 font-medium">
-                        {log.message}
-                      </p>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                            {log.type} Activity
+                          </span>
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
+                            {log.timestamp}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-750 dark:text-zinc-300 font-medium">
+                          {log.message}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </motion.div>

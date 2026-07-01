@@ -7,6 +7,7 @@ import { useToast } from "@/store/useToastStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { isDateInFilter } from "@/lib/dateUtils";
 import {
   Wallet,
   ArrowUpRight,
@@ -140,19 +141,7 @@ export default function WalletView() {
       (tx.note?.toLowerCase() || "").includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
-    if (activeFilter === "all") return true;
-
-    const todayStr = new Date().toLocaleDateString("id-ID").split("/")[0];
-    const txDay = tx.timestamp.split("/")[0];
-
-    if (activeFilter === "today") {
-      return txDay === todayStr;
-    } else if (activeFilter === "week") {
-      const diff = Math.abs(parseInt(todayStr) - parseInt(txDay));
-      return diff <= 7;
-    }
-
-    return true;
+    return isDateInFilter(tx.timestamp, activeFilter === "month" ? "all" : activeFilter);
   });
 
   return (

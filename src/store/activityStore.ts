@@ -19,13 +19,13 @@ export const useActivityStore = create<ActivityState>((set) => ({
       id: "log-1",
       type: "wallet",
       message: "Initial wallet grant: Rp 1,000,000",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleTimeString("id-ID"),
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString("id-ID"),
     },
     {
       id: "log-2",
       type: "workspace",
       message: "Completed task: Review Andi's illustration designs",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleTimeString("id-ID"),
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString("id-ID"),
     }
   ],
   addLog: (type, message) => set((state) => ({
@@ -34,7 +34,7 @@ export const useActivityStore = create<ActivityState>((set) => ({
         id: `log-${Date.now()}`,
         type,
         message,
-        timestamp: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+        timestamp: new Date().toLocaleString("id-ID"),
       },
       ...state.logs
     ]

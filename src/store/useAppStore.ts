@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 /**
  * NusaHub One Account Multi-Capability Architecture
@@ -42,22 +43,31 @@ interface AppState {
   logout: () => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  user: null,
-  isDrawerOpen: false,
-  setUser: (user) => set({ user }),
-  updateCapabilities: (newCaps) => set((state) => {
-    if (!state.user) return {};
-    return {
-      user: {
-        ...state.user,
-        capabilities: {
-          ...state.user.capabilities,
-          ...newCaps,
-        },
-      },
-    };
-  }),
-  toggleDrawer: (isOpen) => set((state) => ({ isDrawerOpen: isOpen !== undefined ? isOpen : !state.isDrawerOpen })),
-  logout: () => set({ user: null, isDrawerOpen: false }),
-}));
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isDrawerOpen: false,
+      setUser: (user) => set({ user }),
+      updateCapabilities: (newCaps) => set((state) => {
+        if (!state.user) return {};
+        return {
+          user: {
+            ...state.user,
+            capabilities: {
+              ...state.user.capabilities,
+              ...newCaps,
+            },
+          },
+        };
+      }),
+      toggleDrawer: (isOpen) => set((state) => ({ isDrawerOpen: isOpen !== undefined ? isOpen : !state.isDrawerOpen })),
+      logout: () => set({ user: null, isDrawerOpen: false }),
+    }),
+    {
+      name: "nusahub-auth-storage",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ user: state.user }), // Only persist the user session, not the UI drawer state
+    }
+  )
+);

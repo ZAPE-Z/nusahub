@@ -94,6 +94,7 @@ export default function SearchBar({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
+          aria-label={placeholder}
           className="ml-2 h-full w-full bg-transparent text-sm text-zinc-900 placeholder-zinc-450 focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-500"
         />
 
@@ -102,6 +103,7 @@ export default function SearchBar({
           {value ? (
             <button
               onClick={handleClear}
+              aria-label="Clear search query"
               className="rounded-full p-0.5 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
               title="Clear search"
             >
@@ -121,6 +123,7 @@ export default function SearchBar({
       {showFilter && onFilterClick && (
         <button
           onClick={onFilterClick}
+          aria-label="Toggle filters"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-650 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 transition-colors"
           title="Toggle filters"
         >

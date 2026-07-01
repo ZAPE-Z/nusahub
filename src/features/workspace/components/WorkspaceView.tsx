@@ -169,7 +169,11 @@ export default function WorkspaceView() {
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-3 gap-1 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 p-1 rounded-xl">
+      <div 
+        role="tablist"
+        aria-label="Workspace sections"
+        className="grid grid-cols-3 gap-1 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 p-1 rounded-xl"
+      >
         {[
           { id: "tasks", label: "Tasks" },
           { id: "notes", label: "Notes Grid" },
@@ -177,6 +181,10 @@ export default function WorkspaceView() {
         ].map((tab) => (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls={`panel-${tab.id}`}
+            id={`tab-${tab.id}`}
             onClick={() => {
               setActiveTab(tab.id as any);
               setSearchQuery(""); // Clear search on tab switch
@@ -198,6 +206,9 @@ export default function WorkspaceView() {
         {activeTab === "tasks" && (
           <motion.div
             key="tasks"
+            role="tabpanel"
+            id="panel-tasks"
+            aria-labelledby="tab-tasks"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -274,6 +285,7 @@ export default function WorkspaceView() {
                                 {col !== "completed" && (
                                   <button
                                     onClick={() => handleCycleStatus(t.id, t.text, t.status)}
+                                    aria-label={`Advance status for task: ${t.text}`}
                                     className="p-1 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 text-primary transition-all flex items-center gap-0.5 text-[9px] font-bold"
                                   >
                                     <span>Next</span>
@@ -282,6 +294,7 @@ export default function WorkspaceView() {
                                 )}
                                 <button
                                   onClick={() => deleteTask(t.id)}
+                                  aria-label={`Delete task: ${t.text}`}
                                   className="p-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-550 transition-all"
                                   title="Delete Task"
                                 >
@@ -304,6 +317,9 @@ export default function WorkspaceView() {
         {activeTab === "notes" && (
           <motion.div
             key="notes"
+            role="tabpanel"
+            id="panel-notes"
+            aria-labelledby="tab-notes"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -356,6 +372,7 @@ export default function WorkspaceView() {
                       <div className="flex gap-1">
                         <button
                           onClick={() => togglePinNote(note.id)}
+                          aria-label={note.isPinned ? "Unpin note" : "Pin note"}
                           className="p-1 rounded hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-500 dark:text-zinc-400"
                           title="Pin note"
                         >
@@ -363,6 +380,7 @@ export default function WorkspaceView() {
                         </button>
                         <button
                           onClick={() => handleDeleteNoteTrigger(note.id, note.title)}
+                          aria-label={`Delete note: ${note.title}`}
                           className="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-550"
                           title="Delete note"
                         >
@@ -381,6 +399,9 @@ export default function WorkspaceView() {
         {activeTab === "calendar" && (
           <motion.div
             key="calendar"
+            role="tabpanel"
+            id="panel-calendar"
+            aria-labelledby="tab-calendar"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}

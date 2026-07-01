@@ -13,12 +13,18 @@ import { ROUTES } from "@/constants/routes";
 export default function Drawer() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const user = useAppStore((state) => state.user);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = useAppStore((state) => mounted ? state.user : null);
   const isDrawerOpen = useAppStore((state) => state.isDrawerOpen);
   const toggleDrawer = useAppStore((state) => state.toggleDrawer);
   const logout = useAppStore((state) => state.logout);
 
-  if (!isDrawerOpen) return null;
+  if (!mounted || !isDrawerOpen) return null;
 
   const handleLogout = () => {
     logout();

@@ -109,6 +109,7 @@ export default function ConversationCard({
       <div className="absolute right-2 bottom-2 hidden group-hover:flex items-center gap-1 bg-surface p-1 rounded-md border shadow-medium">
         <button
           onClick={handlePinClick}
+          aria-label={isPinned ? "Unpin chat" : "Pin chat"}
           className="p-1 text-text-muted hover:text-secondary rounded hover:bg-background transition-colors"
           title={isPinned ? "Unpin chat" : "Pin chat"}
         >
@@ -116,6 +117,7 @@ export default function ConversationCard({
         </button>
         <button
           onClick={handleDeleteClick}
+          aria-label="Delete chat"
           className="p-1 text-text-muted hover:text-error rounded hover:bg-background transition-colors"
           title="Delete chat"
         >

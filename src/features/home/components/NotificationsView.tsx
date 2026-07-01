@@ -10,54 +10,65 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { EmptyConversation } from "@/components/shared";
+import { isDateInFilter } from "@/lib/dateUtils";
 
 type NotificationCategory = "all" | "unread" | "payments" | "merchant" | "workspace" | "community" | "ai";
 
 export default function NotificationsView() {
   const { alerts, isLoadingAlerts, markAllRead } = useHomeData();
   const [activeCategory, setActiveCategory] = useState<NotificationCategory>("all");
+  const [activeDateFilter, setActiveDateFilter] = useState<"all" | "today" | "week">("all");
 
   const getFilteredAlerts = () => {
+    let list = [];
     switch (activeCategory) {
       case "unread":
-        return alerts.filter((a) => !a.isRead);
+        list = alerts.filter((a) => !a.isRead);
+        break;
       case "payments":
-        return alerts.filter((a) => 
+        list = alerts.filter((a) => 
           a.message.toLowerCase().includes("pay") || 
           a.message.toLowerCase().includes("purchase") || 
           a.message.toLowerCase().includes("wallet") ||
           a.message.toLowerCase().includes("balance") ||
           a.type === "order"
         );
+        break;
       case "merchant":
-        return alerts.filter((a) => 
+        list = alerts.filter((a) => 
           a.linkUrl === "/merchant" || 
           a.message.toLowerCase().includes("merchant") || 
           a.type === "order"
         );
+        break;
       case "workspace":
-        return alerts.filter((a) => 
+        list = alerts.filter((a) => 
           a.linkUrl === "/workspace" || 
           a.message.toLowerCase().includes("workspace") || 
           a.message.toLowerCase().includes("task") ||
           a.message.toLowerCase().includes("project")
         );
+        break;
       case "community":
-        return alerts.filter((a) => 
+        list = alerts.filter((a) => 
           a.linkUrl === "/community" || 
           a.message.toLowerCase().includes("community") || 
           a.message.toLowerCase().includes("group")
         );
+        break;
       case "ai":
-        return alerts.filter((a) => 
+        list = alerts.filter((a) => 
           a.linkUrl === "/ai" || 
           a.message.toLowerCase().includes("ai") || 
           a.message.toLowerCase().includes("bot") || 
           a.message.toLowerCase().includes("assistant")
         );
+        break;
       default:
-        return alerts;
+        list = alerts;
+        break;
     }
+    return list.filter((a) => isDateInFilter(a.timestamp, activeDateFilter));
   };
 
   const getCategoryCount = (category: NotificationCategory) => {
@@ -135,16 +146,32 @@ export default function NotificationsView() {
             Notifications Center
           </span>
         </div>
-        {alerts.some((a) => !a.isRead) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => markAllRead()}
-            className="text-[11px] h-8 text-primary font-bold hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-lg transition-colors"
-          >
-            Mark all as read
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {(["all", "today", "week"] as const).map((filt) => (
+            <button
+              key={filt}
+              onClick={() => setActiveDateFilter(filt)}
+              className={cn(
+                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-all",
+                activeDateFilter === filt
+                  ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 shadow-sm"
+                  : "bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-450 dark:hover:bg-zinc-900"
+              )}
+            >
+              {filt}
+            </button>
+          ))}
+          {alerts.some((a) => !a.isRead) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => markAllRead()}
+              className="text-[11px] h-8 text-primary font-bold hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-lg transition-colors ml-2"
+            >
+              Mark all
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Category Tabs Switcher (Horizontal scroll) */}

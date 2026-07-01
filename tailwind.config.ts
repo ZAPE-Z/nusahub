@@ -47,6 +47,10 @@ const config: Config = {
         xl: "32px",
         xxl: "48px",
       },
+      fontFamily: {
+        sans: ["var(--font-sans)", "sans-serif"],
+        heading: ["var(--font-heading)", "sans-serif"],
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
