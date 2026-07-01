@@ -22,6 +22,7 @@ interface DeveloperState {
   miniApps: MiniApp[];
   logs: string[];
   generateApiKey: (name: string) => void;
+  regenerateApiKey: (id: string) => void;
   revokeApiKey: (id: string) => void;
   publishMiniApp: (app: Omit<MiniApp, "id" | "status" | "created">) => void;
   addLog: (logText: string) => void;
@@ -51,6 +52,24 @@ export const useDeveloperStore = create<DeveloperState>((set) => ({
     return {
       apiKeys: [...state.apiKeys, newKey],
       logs: [...state.logs, `[API] Generated key "${name}" successfully.`]
+    };
+  }),
+  regenerateApiKey: (id) => set((state) => {
+    const randomHex = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
+    const updated = state.apiKeys.map((k) => {
+      if (k.id === id) {
+        return {
+          ...k,
+          key: `nh_live_${randomHex}`,
+          created: new Date().toISOString().split("T")[0]
+        };
+      }
+      return k;
+    });
+    const keyName = state.apiKeys.find((k) => k.id === id)?.name || "Client";
+    return {
+      apiKeys: updated,
+      logs: [...state.logs, `[API] Regenerated credential secret for "${keyName}".`]
     };
   }),
   revokeApiKey: (id) => set((state) => ({

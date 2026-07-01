@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { useAppStore, CapabilityStatus, UserCapabilities } from "@/store/useAppStore";
+import { useAppStore, CapabilityStatus } from "@/store/useAppStore";
 import { useWalletStore } from "@/store/walletStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useActivityStore } from "@/store/activityStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +21,7 @@ import {
   CheckCircle,
   GraduationCap,
   Globe,
-  Plus,
+  History,
 } from "lucide-react";
 
 /**
@@ -36,6 +37,7 @@ export default function ProfileView() {
 
   const walletStore = useWalletStore();
   const workspaceStore = useWorkspaceStore();
+  const { logs } = useActivityStore();
 
   if (!user) return null;
 
@@ -133,22 +135,22 @@ export default function ProfileView() {
       title: "Community Center",
       desc: "Connect Jaringan, manage groups channels, and coordinate members discussions.",
       status: caps.community,
-      stat: "Coming Soon in Phase 3",
-      btnLabel: "Coming Soon",
+      stat: caps.community === "active" ? "Connected" : "Activate Capability",
+      btnLabel: caps.community === "active" ? "Open Center" : "Activate Capability",
       href: "/community",
       icon: Users,
-      color: "text-text-muted/40 border-text-muted/10 bg-text-muted/5",
+      color: caps.community === "active" ? "text-primary border-primary/15 bg-primary/5" : "text-text-muted/40 border-text-muted/10 bg-text-muted/5",
     },
     {
       id: "developer",
       title: "Developer Center",
       desc: "Publish third-party sandboxed widgets Mini Apps and request API keys.",
       status: caps.developer,
-      stat: "Coming Soon in Phase 3",
-      btnLabel: "Coming Soon",
+      stat: caps.developer === "active" ? "2 Credentials Deployed" : "Activate Capability",
+      btnLabel: caps.developer === "active" ? "Open Console" : "Activate Capability",
       href: "/developer",
       icon: Code,
-      color: "text-text-muted/40 border-text-muted/10 bg-text-muted/5",
+      color: caps.developer === "active" ? "text-primary border-primary/15 bg-primary/5" : "text-text-muted/40 border-text-muted/10 bg-text-muted/5",
     },
   ];
 
@@ -284,6 +286,50 @@ export default function ProfileView() {
           })}
         </div>
       </div>
+
+      {/* 4. Unified Activity Timeline Feed */}
+      <Card className="border border-text-muted/15 shadow-low bg-surface">
+        <CardContent className="p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-text-muted/10 pb-2.5">
+            <div className="flex items-center gap-2">
+              <History className="h-4.5 w-4.5 text-primary" />
+              <span className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                Unified Activity Timeline
+              </span>
+            </div>
+            <span className="text-[10px] text-text-muted/60">{logs.length} events logged</span>
+          </div>
+
+          <div className="space-y-3.5 max-h-[250px] overflow-y-auto pr-1">
+            {logs.length === 0 ? (
+              <p className="text-[11px] text-text-muted/50 text-center py-6">No recent account activities recorded.</p>
+            ) : (
+              logs.map((log) => {
+                let LogIcon = History;
+                let colorClass = "text-text-muted bg-text-muted/10";
+                if (log.type === "wallet") { LogIcon = Wallet; colorClass = "text-secondary bg-secondary/10"; }
+                else if (log.type === "workspace") { LogIcon = Briefcase; colorClass = "text-primary bg-primary/10"; }
+                else if (log.type === "merchant") { LogIcon = ShoppingBag; colorClass = "text-secondary bg-secondary/10"; }
+                else if (log.type === "creator") { LogIcon = Sparkles; colorClass = "text-primary bg-primary/10"; }
+                else if (log.type === "community") { LogIcon = Users; colorClass = "text-primary bg-primary/10"; }
+                else if (log.type === "developer") { LogIcon = Code; colorClass = "text-primary bg-primary/10"; }
+
+                return (
+                  <div key={log.id} className="flex gap-3 text-xs items-start p-2.5 hover:bg-background/40 rounded transition-all">
+                    <div className={cn("p-1.5 rounded shrink-0", colorClass)}>
+                      <LogIcon className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-text-primary leading-relaxed break-words">{log.message}</p>
+                      <span className="text-[9px] text-text-muted/60 block mt-0.5">{log.timestamp}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </CardContent>
+      </Card>
       
     </div>
   );

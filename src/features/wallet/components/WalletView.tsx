@@ -25,6 +25,48 @@ import {
   X,
 } from "lucide-react";
 
+// Custom Bottom Sheet component
+const CustomSheet = ({
+  isOpen,
+  onClose,
+  title,
+  children
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 bg-black z-50 transition-opacity"
+        />
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 220 }}
+          className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl border-t border-text-muted/10 shadow-high z-50 p-5 pb-8 max-h-[85vh] overflow-y-auto"
+        >
+          <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
+            <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
+            <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          {children}
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
+
 export default function WalletView() {
   const { balance, availableBalance, spendingThisMonth, incomeThisMonth, transactions, updateBalance, addTransaction } = useWalletStore();
   const { addLog } = useActivityStore();
@@ -147,47 +189,7 @@ export default function WalletView() {
     return true;
   });
 
-  // Custom Bottom Sheet component
-  const CustomSheet = ({
-    isOpen,
-    onClose,
-    title,
-    children
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    title: string;
-    children: React.ReactNode;
-  }) => (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black z-50 transition-opacity"
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 220 }}
-            className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl border-t border-text-muted/10 shadow-high z-50 p-5 pb-8 max-h-[85vh] overflow-y-auto"
-          >
-            <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
-              <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
-              <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            {children}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
+
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28 bg-background">

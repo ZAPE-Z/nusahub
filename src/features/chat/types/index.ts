@@ -15,6 +15,11 @@ export interface Message {
   timestamp: string;
   isRead: boolean;
   productRef?: ProductRef;
+  replyTo?: {
+    id: string;
+    text: string;
+    senderName: string;
+  };
 }
 
 export interface Participant {

@@ -24,16 +24,16 @@ export function useMessages(chatId: string) {
     },
   });
 
-  const sendMutation = useMutation<void, Error, string>({
-    mutationFn: async (text) => {
+  const sendMutation = useMutation<void, Error, { text: string; replyTo?: any }>({
+    mutationFn: async ({ text, replyTo }) => {
       // Send active user Budi's message immediately (senderId: "user-1")
-      chatStore.sendMessage(chatId, text, "user-1");
+      chatStore.sendMessage(chatId, text, "user-1", undefined, replyTo);
     },
-    onSuccess: (_, text) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["chat-messages", chatId] });
 
       // Trigger partner automated reply simulation
-      simulatePartnerReply(text);
+      simulatePartnerReply(variables.text);
     },
   });
 

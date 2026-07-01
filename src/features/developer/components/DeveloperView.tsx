@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useDeveloperStore, ApiKey, MiniApp } from "@/store/developerStore";
+import { useDeveloperStore } from "@/store/developerStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,10 +18,53 @@ import {
   Play,
   RotateCw,
   X,
+  History,
 } from "lucide-react";
 
+// Custom inline Dialog overlay
+const CustomDialog = ({
+  isOpen,
+  onClose,
+  title,
+  children
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 bg-black z-50 transition-opacity"
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
+          animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+          exit={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
+          transition={{ duration: 0.2 }}
+          className="fixed top-1/2 left-1/2 bg-surface rounded-xl border border-text-muted/10 shadow-high z-50 p-5 w-[90%] max-w-sm"
+        >
+          <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
+            <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
+            <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          {children}
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
+
 export default function DeveloperView() {
-  const { apiKeys, miniApps, logs, generateApiKey, revokeApiKey, publishMiniApp, addLog } = useDeveloperStore();
+  const { apiKeys, miniApps, logs, generateApiKey, regenerateApiKey, revokeApiKey, publishMiniApp, addLog } = useDeveloperStore();
   const { addLog: addGlobalLog } = useActivityStore();
   const { toast } = useToast();
 
@@ -46,6 +89,14 @@ export default function DeveloperView() {
     
     setNewKeyName("");
     setIsKeyDialogOpen(false);
+  };
+
+  const handleRegenerateKey = (id: string, name: string) => {
+    if (confirm(`Regenerate API credential token for "${name}"? Previous keys will become invalid.`)) {
+      regenerateApiKey(id);
+      addGlobalLog("developer", `Regenerated API credential tokens for: "${name}"`);
+      toast("API Key Regenerated", `Credentials for "${name}" successfully updated!`, "success");
+    }
   };
 
   const handleRevokeKey = (id: string, name: string) => {
@@ -77,48 +128,6 @@ export default function DeveloperView() {
     setAppUrl("");
     setIsAppDialogOpen(false);
   };
-
-  // Custom inline Dialog overlay
-  const CustomDialog = ({
-    isOpen,
-    onClose,
-    title,
-    children
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    title: string;
-    children: React.ReactNode;
-  }) => (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black z-50 transition-opacity"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
-            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-1/2 left-1/2 bg-surface rounded-xl border border-text-muted/10 shadow-high z-50 p-5 w-[90%] max-w-sm"
-          >
-            <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
-              <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
-              <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            {children}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28 bg-background">
@@ -199,13 +208,22 @@ export default function DeveloperView() {
                   </div>
 
                   {k.status === "active" && (
-                    <Button
-                      onClick={() => handleRevokeKey(k.id, k.name)}
-                      variant="outline"
-                      className="w-full h-8.5 text-[10px] border-secondary text-secondary hover:bg-secondary/5 font-bold mt-2"
-                    >
-                      Revoke Client Credentials
-                    </Button>
+                    <div className="flex gap-2.5 mt-2">
+                      <Button
+                        onClick={() => handleRegenerateKey(k.id, k.name)}
+                        variant="outline"
+                        className="flex-1 h-8 text-[9px] border-primary/20 text-primary hover:bg-primary/5 font-bold"
+                      >
+                        Regenerate Key
+                      </Button>
+                      <Button
+                        onClick={() => handleRevokeKey(k.id, k.name)}
+                        variant="outline"
+                        className="flex-1 h-8 text-[9px] border-secondary text-secondary hover:bg-secondary/5 font-bold"
+                      >
+                        Revoke Client
+                      </Button>
+                    </div>
                   )}
                 </Card>
               ))}
@@ -262,6 +280,29 @@ export default function DeveloperView() {
                   </Button>
                 </Card>
               ))}
+            </div>
+
+            {/* Sandbox Deployment History section */}
+            <div className="space-y-3 mt-6">
+              <div className="flex items-center gap-1.5 border-b border-text-muted/10 pb-2">
+                <History className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                  Sandbox Deployment Registry & History
+                </span>
+              </div>
+              <div className="space-y-2">
+                {miniApps.map((app) => (
+                  <div key={app.id} className="p-3 bg-surface border border-text-muted/10 rounded-lg flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-text-primary block">{app.name} (v1.0.0-mock)</span>
+                      <span className="text-[10px] text-text-muted block mt-0.5">Created: {app.created} • Status: Deployed</span>
+                    </div>
+                    <span className="text-[9px] font-bold text-success bg-success/10 px-2 py-0.5 rounded border border-success/15 uppercase tracking-wider">
+                      sandbox
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}

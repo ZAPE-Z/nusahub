@@ -10,7 +10,12 @@ interface ChatState {
     chatId: string,
     text: string,
     senderId: string,
-    productRef?: any
+    productRef?: any,
+    replyTo?: {
+      id: string;
+      text: string;
+      senderName: string;
+    }
   ) => void;
   togglePin: (chatId: string) => void;
   deleteConversation: (chatId: string) => void;
@@ -22,7 +27,7 @@ export const useChatStore = create<ChatState>((set) => ({
   conversations: MOCK_CONVERSATIONS,
   activeChatId: null,
   setActiveChatId: (id) => set({ activeChatId: id }),
-  sendMessage: (chatId, text, senderId, productRef) => set((state) => {
+  sendMessage: (chatId, text, senderId, productRef, replyTo) => set((state) => {
     const updatedConversations = state.conversations.map((conv) => {
       if (conv.id === chatId) {
         const newMessage: Message = {
@@ -32,6 +37,7 @@ export const useChatStore = create<ChatState>((set) => ({
           timestamp: new Date().toISOString(),
           isRead: senderId === "user-1", // Read if sent by active user Budi
           productRef,
+          replyTo,
         };
         return {
           ...conv,
@@ -40,6 +46,7 @@ export const useChatStore = create<ChatState>((set) => ({
       }
       return conv;
     });
+
     return { conversations: updatedConversations };
   }),
   togglePin: (chatId) => set((state) => ({

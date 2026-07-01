@@ -18,6 +18,50 @@ import {
   X,
 } from "lucide-react";
 
+// Custom Dialog component
+const CustomDialog = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  maxWidth = "max-w-sm"
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  maxWidth?: string;
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 bg-black z-50 transition-opacity"
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
+          animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+          exit={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
+          transition={{ duration: 0.2 }}
+          className={cn("fixed top-1/2 left-1/2 bg-surface rounded-xl border border-text-muted/10 shadow-high z-50 p-5 w-[90%]", maxWidth)}
+        >
+          <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
+            <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
+            <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          {children}
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
+
 export default function WorkspaceView() {
   const { tasks, notes, addTask, toggleTask, deleteTask, updateTaskStatus, addNote, updateNote, togglePinNote, deleteNote } = useWorkspaceStore();
   const { addLog } = useActivityStore();
@@ -124,48 +168,7 @@ export default function WorkspaceView() {
     setIsEventDialogOpen(false);
   };
 
-  const CustomDialog = ({
-    isOpen,
-    onClose,
-    title,
-    children,
-    maxWidth = "max-w-sm"
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    title: string;
-    children: React.ReactNode;
-    maxWidth?: string;
-  }) => (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black z-50 transition-opacity"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
-            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
-            transition={{ duration: 0.2 }}
-            className={cn("fixed top-1/2 left-1/2 bg-surface rounded-xl border border-text-muted/10 shadow-high z-50 p-5 w-[90%]", maxWidth)}
-          >
-            <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
-              <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
-              <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            {children}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
+
 
   return (
     <div className="flex flex-col gap-5 p-4 pb-28 bg-background">

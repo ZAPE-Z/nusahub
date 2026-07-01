@@ -12,12 +12,14 @@ interface ChatBubbleProps {
   message: Message;
   isSelf: boolean;
   onBuyProduct?: (product: ProductRef) => void;
+  onReplyMessage?: () => void;
 }
 
 export default function ChatBubble({
   message,
   isSelf,
   onBuyProduct,
+  onReplyMessage,
 }: ChatBubbleProps) {
   const timeStr = formatShortTime(message.timestamp);
   const formattedHtml = formatMessageText(message.text);
@@ -38,6 +40,19 @@ export default function ChatBubble({
             : "bg-text-muted/10 text-text-primary rounded-bl-none"
         )}
       >
+        {/* Render replied-to message preview */}
+        {message.replyTo && (
+          <div className={cn(
+            "mb-2 p-2 text-[10px] leading-snug border-l-2 rounded select-none",
+            isSelf ? "bg-white/15 border-white/50 text-white/80" : "bg-black/5 border-primary/40 text-text-primary/70"
+          )}>
+            <span className={cn("font-bold block", isSelf ? "text-white" : "text-primary")}>
+              {message.replyTo.senderName}
+            </span>
+            <p className="truncate mt-0.5">{message.replyTo.text}</p>
+          </div>
+        )}
+
         <div
           dangerouslySetInnerHTML={{ __html: formattedHtml }}
           className="space-y-1"
@@ -65,7 +80,7 @@ export default function ChatBubble({
               <Button
                 onClick={() => onBuyProduct(message.productRef!)}
                 size="sm"
-                className="w-full h-8 text-[10px] flex items-center justify-center gap-1 mt-1 font-semibold"
+                className="w-full h-8 text-[10px] flex items-center justify-center gap-1 mt-1 font-semibold shadow-low"
               >
                 <ShoppingBag className="h-3.5 w-3.5" />
                 <span>Buy Now</span>
@@ -76,8 +91,16 @@ export default function ChatBubble({
       </div>
 
       {/* Message Footer Status & Timestamp */}
-      <div className="flex items-center gap-1 text-[9px] text-text-muted px-1 mt-0.5">
+      <div className="flex items-center gap-1.5 text-[9px] text-text-muted px-1 mt-0.5 select-none">
         <span>{timeStr}</span>
+        {onReplyMessage && (
+          <button
+            onClick={onReplyMessage}
+            className="hover:text-primary active:scale-95 transition-all text-text-muted/80 font-semibold"
+          >
+            • Reply
+          </button>
+        )}
         {isSelf && (
           <CheckCheck
             className={cn(
