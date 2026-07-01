@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useWalletStore } from "@/store/walletStore";
 import { useMerchantStore } from "@/store/merchantStore";
 import { useFeedStore } from "@/store/feedStore";
@@ -53,16 +53,46 @@ export default function CheckoutSheet({
   
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Ref to track auto-close timeout
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Prevent Enter key spam while processing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && isProcessing) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [isProcessing]);
+
+  // Clean up auto-close timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   if (!product) return null;
 
   const selectedShipping = SHIPPING_OPTIONS.find((s) => s.id === shippingId)!;
   const totalAmount = product.price + selectedShipping.price;
 
   const handleCheckoutProcess = async () => {
-    if (balance < totalAmount) {
+    if (isProcessing) return;
+
+    // Double-check the absolute latest balance value right before charging
+    const latestBalance = useWalletStore.getState().balance;
+    if (latestBalance < totalAmount) {
       toast(
         "Insufficient Funds",
-        `You need Rp ${totalAmount.toLocaleString("id-ID")} but only have Rp ${balance.toLocaleString("id-ID")}`,
+        `You need Rp ${totalAmount.toLocaleString("id-ID")} but only have Rp ${latestBalance.toLocaleString("id-ID")}`,
         "error"
       );
       return;
@@ -73,8 +103,16 @@ export default function CheckoutSheet({
     // Simulate payment transaction network latency
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // 1. Update Wallet Balance
-    walletStore.updateBalance(balance - totalAmount);
+    // Double-check once again after the async timeout completes to prevent race conditions
+    const finalBalanceCheck = useWalletStore.getState().balance;
+    if (finalBalanceCheck < totalAmount) {
+      toast("Error", "Transaction aborted: insufficient wallet funds.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    // 1. Update Wallet Balance atomically
+    walletStore.updateBalance(finalBalanceCheck - totalAmount);
     
     // 2. Log Wallet Transaction
     const tx = walletStore.addTransaction({
@@ -113,7 +151,7 @@ export default function CheckoutSheet({
     toast("Purchase Successful", `You successfully bought ${product.title}`, "success");
 
     // Success screen auto-closes
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setCheckoutStep("address");
       onClose();
       if (onSuccess) onSuccess();

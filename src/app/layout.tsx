@@ -8,6 +8,7 @@ import BottomNavigation from "@/components/layout/BottomNavigation";
 import Drawer from "@/components/layout/Drawer";
 import FAB from "@/components/layout/FAB";
 import ToastContainer from "@/components/shared/ToastContainer";
+import OverlaySystem from "@/components/shared/OverlaySystem";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -49,6 +50,7 @@ export default function RootLayout({
               <BottomNavigation />
               <Drawer />
               <ToastContainer />
+              <OverlaySystem />
             </div>
           </ThemeProvider>
         </QueryProvider>

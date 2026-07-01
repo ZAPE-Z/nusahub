@@ -10,12 +10,14 @@ import { Bot, SendHorizontal, Trash2, Sparkles, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
+import { ConfirmationDialog } from "@/components/shared";
 
 export default function AIChatView() {
   const { messages, isTyping, ask, clearHistory, regenerate } = useAIAssistant();
   const user = useAppStore((state) => state.user);
   
   const [inputText, setInputText] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -46,28 +48,41 @@ export default function AIChatView() {
   };
 
   const isThreadEmpty = messages.length <= 1; // Only contains init greeting
-
+ 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem-4rem)] bg-background max-w-full">
-      {/* Top action header */}
-      <div className="px-4 py-2.5 bg-surface border-b border-text-muted/10 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-1.5 text-xs text-primary font-bold">
-          <Sparkles className="h-4 w-4 animate-pulse text-secondary" />
-          <span>Super AI Orchestrator</span>
+    <>
+      {showConfirm && (
+        <ConfirmationDialog
+          isOpen={showConfirm}
+          onClose={() => setShowConfirm(false)}
+          title="Clear Conversation History"
+          description="Are you sure you want to clear your AI chat history? All messages in this thread will be permanently deleted."
+          confirmLabel="Clear Log"
+          type="danger"
+          onConfirm={() => {
+            clearHistory();
+            setShowConfirm(false);
+          }}
+        />
+      )}
+      <div className="flex flex-col h-[calc(100vh-3.5rem-4rem)] bg-background max-w-full">
+        {/* Top action header */}
+        <div className="px-4 py-2.5 bg-surface border-b border-text-muted/10 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-primary font-bold">
+            <Sparkles className="h-4 w-4 animate-pulse text-secondary" />
+            <span>Super AI Orchestrator</span>
+          </div>
+          {!isThreadEmpty && (
+            <button
+              onClick={() => setShowConfirm(true)}
+              className="flex items-center gap-1 text-[10px] text-text-muted hover:text-error transition-all font-semibold active:scale-95 border border-text-muted/15 rounded px-2 py-1 bg-background"
+              title="Clear Log"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Clear History</span>
+            </button>
+          )}
         </div>
-        {!isThreadEmpty && (
-          <button
-            onClick={() => {
-              if (confirm("Clear AI conversation history?")) clearHistory();
-            }}
-            className="flex items-center gap-1 text-[10px] text-text-muted hover:text-error transition-all font-semibold active:scale-95 border border-text-muted/15 rounded px-2 py-1 bg-background"
-            title="Clear Log"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            <span>Clear History</span>
-          </button>
-        )}
-      </div>
 
       {/* Main chat viewport */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col min-h-0 space-y-4">
@@ -191,5 +206,6 @@ export default function AIChatView() {
         </button>
       </form>
     </div>
+    </>
   );
 }

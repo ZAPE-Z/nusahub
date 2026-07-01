@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useMerchantStore, MerchantProduct, MerchantOrder } from "@/store/merchantStore";
+import { useMerchantStore, MerchantProduct } from "@/store/merchantStore";
 import { useFeedStore } from "@/store/feedStore";
 import { useActivityStore } from "@/store/activityStore";
 import { useToast } from "@/store/useToastStore";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,13 +25,19 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
+import {
+  DashboardCard,
+  StatCard,
+  SearchBar,
+  ConfirmationDialog,
+} from "@/components/shared";
 
-// Custom inline Dialog component
+// Inline Dialog for Adding/Editing products (specific to Merchant)
 const CustomDialog = ({
   isOpen,
   onClose,
   title,
-  children
+  children,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -54,11 +59,11 @@ const CustomDialog = ({
           animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
           exit={{ opacity: 0, scale: 0.95, y: "-40%", x: "-50%" }}
           transition={{ duration: 0.2 }}
-          className="fixed top-1/2 left-1/2 bg-surface rounded-xl border border-text-muted/10 shadow-high z-50 p-5 w-[90%] max-w-sm"
+          className="fixed top-1/2 left-1/2 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl z-50 p-5 w-[90%] max-w-sm"
         >
-          <div className="flex justify-between items-center border-b border-text-muted/10 pb-3 mb-4">
-            <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</span>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-primary/10 text-text-muted">
+          <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-950 pb-3 mb-4">
+            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">{title}</span>
+            <button onClick={onClose} className="p-1 rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-405">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -85,6 +90,12 @@ export default function MerchantView() {
   const [prodPrice, setProdPrice] = useState("");
   const [prodStock, setProdStock] = useState("");
   const [prodImageUrl, setProdImageUrl] = useState("");
+
+  // Search states for products
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Delete confirmation dialog states
+  const [productToDelete, setProductToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const handleOpenAddProduct = () => {
     setEditingProduct(null);
@@ -153,12 +164,16 @@ export default function MerchantView() {
     setIsProductDialogOpen(false);
   };
 
-  const handleDeleteProduct = (id: string, title: string) => {
-    if (confirm(`Are you sure you want to delete "${title}"?`)) {
-      deleteProduct(id);
-      addLog("merchant", `Deleted product listing: "${title}"`);
-      toast("Deleted", `Listing "${title}" removed`, "success");
-    }
+  const handleDeleteTrigger = (id: string, title: string) => {
+    setProductToDelete({ id, title });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!productToDelete) return;
+    deleteProduct(productToDelete.id);
+    addLog("merchant", `Deleted product listing: "${productToDelete.title}"`);
+    toast("Deleted", `Listing "${productToDelete.title}" removed`, "success");
+    setProductToDelete(null);
   };
 
   const handleShipOrder = (id: string, customerName: string) => {
@@ -170,22 +185,23 @@ export default function MerchantView() {
   const bestSeller = products[0]?.title || "Spicy Tempeh Crisps";
   const lowStockProducts = products.filter((p) => p.stock < 15);
 
-
+  const filteredProducts = products.filter((prod) =>
+    prod.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="flex flex-col gap-5 p-4 pb-28 bg-background">
-      
+    <div className="flex flex-col gap-5 p-4 pb-28">
       {/* Title */}
-      <div className="flex items-center justify-between border-b border-text-muted/10 pb-3">
+      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
         <div>
-          <h2 className="font-heading text-lg font-bold text-text-primary">Merchant Console</h2>
-          <p className="text-[11px] text-text-muted">Manage product inventories, ship client orders, and view sales</p>
+          <h2 className="font-heading text-lg font-bold text-zinc-900 dark:text-zinc-50">Merchant Console</h2>
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Manage product inventories, ship client orders, and view sales</p>
         </div>
-        <ShoppingBag className="h-5 w-5 text-primary animate-pulse" />
+        <ShoppingBag className="h-5 w-5 text-zinc-700 dark:text-zinc-300 animate-pulse" />
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-3 gap-1 bg-surface border border-text-muted/10 p-1 rounded-lg">
+      <div className="grid grid-cols-3 gap-1 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 p-1 rounded-xl">
         {[
           { id: "dashboard", label: "Dashboard" },
           { id: "products", label: "Inventory" },
@@ -195,10 +211,10 @@ export default function MerchantView() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={cn(
-              "text-[10px] font-bold py-1.5 rounded-md uppercase tracking-wider transition-all",
+              "text-[10px] font-bold py-1.5 rounded-lg uppercase tracking-wider transition-all",
               activeTab === tab.id
-                ? "bg-primary text-white shadow-low"
-                : "text-text-muted hover:bg-primary/5"
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-sm"
+                : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
             {tab.label}
@@ -208,7 +224,6 @@ export default function MerchantView() {
 
       {/* Content */}
       <AnimatePresence mode="wait">
-        
         {activeTab === "dashboard" && (
           <motion.div
             key="dashboard"
@@ -217,101 +232,98 @@ export default function MerchantView() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
           >
+            {/* StatCards grid */}
             <div className="grid grid-cols-2 gap-3">
-              {[
-                { title: "Today's Sales", val: `Rp ${revenue.toLocaleString("id-ID")}`, icon: TrendingUp, color: "text-success bg-success/15" },
-                { title: "Active Orders", val: `${orders.filter(o => o.status === "pending").length} Pending`, icon: Package, color: "text-secondary bg-secondary/15" },
-                { title: "Console Visitors", val: visitors.toString(), icon: Users, color: "text-primary bg-primary/15" },
-                { title: "Conversion Rate", val: "3.2%", icon: Percent, color: "text-primary bg-primary/15" },
-              ].map((stat, i) => {
-                const Icon = stat.icon;
-                return (
-                  <Card key={i} className="border border-text-muted/15 shadow-low">
-                    <CardContent className="p-3.5 flex items-center gap-3">
-                      <div className={cn("p-2 rounded-lg shrink-0", stat.color)}>
-                        <Icon className="h-4.5 w-4.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[9px] text-text-muted font-bold uppercase tracking-wider block">
-                          {stat.title}
-                        </span>
-                        <span className="font-bold text-xs text-text-primary block mt-0.5 truncate">
-                          {stat.val}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              <StatCard
+                title="Today's Sales"
+                value={`Rp ${revenue.toLocaleString("id-ID")}`}
+                icon={<TrendingUp className="h-4.5 w-4.5 text-emerald-600" />}
+                trend={{ value: "Live revenue", direction: "up" }}
+              />
+              <StatCard
+                title="Active Orders"
+                value={`${orders.filter(o => o.status === "pending").length} Pending`}
+                icon={<Package className="h-4.5 w-4.5 text-amber-500" />}
+                trend={{ value: "Requires shipment", direction: "neutral" }}
+              />
+              <StatCard
+                title="Console Visitors"
+                value={visitors.toString()}
+                icon={<Users className="h-4.5 w-4.5 text-zinc-500" />}
+              />
+              <StatCard
+                title="Conversion Rate"
+                value="3.2%"
+                icon={<Percent className="h-4.5 w-4.5 text-zinc-500" />}
+              />
             </div>
 
-            {/* Sales Chart */}
-            <Card className="border border-text-muted/15 shadow-low">
-              <CardContent className="p-4 space-y-3">
-                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">
-                  Weekly Sales Performance (Simulated)
-                </span>
-                
-                <div className="h-28 w-full flex items-end justify-between pt-4 px-2 border-b border-text-muted/10 relative">
-                  <div className="absolute left-0 top-0 h-full w-full flex flex-col justify-between pointer-events-none opacity-5">
-                    <div className="border-t border-text-primary w-full" />
-                    <div className="border-t border-text-primary w-full" />
-                    <div className="border-t border-text-primary w-full" />
-                  </div>
-                  {[
-                    { day: "Mon", val: 30 },
-                    { day: "Tue", val: 50 },
-                    { day: "Wed", val: 40 },
-                    { day: "Thu", val: 85 },
-                    { day: "Fri", val: 65 },
-                    { day: "Sat", val: 95 },
-                    { day: "Sun", val: 75 },
-                  ].map((bar, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-1.5 flex-1 max-w-[28px] group">
-                      <div className="text-[8px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                        {(bar.val * 1000).toLocaleString("id-ID")}
-                      </div>
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: `${bar.val * 0.7}px` }}
-                        transition={{ delay: idx * 0.05, duration: 0.5 }}
-                        className={cn(
-                          "w-full rounded-t-sm",
-                          idx === 5 ? "bg-secondary" : "bg-primary"
-                        )}
-                      />
-                      <span className="text-[8px] font-bold text-text-muted uppercase mt-1">
-                        {bar.day}
-                      </span>
+            {/* Sales Chart composed in DashboardCard */}
+            <DashboardCard title="Weekly Sales Performance" subtitle="Weekly revenue metrics report">
+              <div className="h-28 w-full flex items-end justify-between pt-4 px-2 border-b border-zinc-100 dark:border-zinc-900 relative">
+                <div className="absolute left-0 top-0 h-full w-full flex flex-col justify-between pointer-events-none opacity-5">
+                  <div className="border-t border-zinc-700 w-full" />
+                  <div className="border-t border-zinc-700 w-full" />
+                  <div className="border-t border-zinc-700 w-full" />
+                </div>
+                {[
+                  { day: "Mon", val: 30 },
+                  { day: "Tue", val: 50 },
+                  { day: "Wed", val: 40 },
+                  { day: "Thu", val: 85 },
+                  { day: "Fri", val: 65 },
+                  { day: "Sat", val: 95 },
+                  { day: "Sun", val: 75 },
+                ].map((bar, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-1.5 flex-1 max-w-[28px] group">
+                    <div className="text-[8px] font-extrabold text-zinc-900 dark:text-zinc-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {(bar.val * 1000).toLocaleString("id-ID")}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: `${bar.val * 0.7}px` }}
+                      transition={{ delay: idx * 0.05, duration: 0.5 }}
+                      className={cn(
+                        "w-full rounded-t-sm",
+                        idx === 5 ? "bg-amber-500" : "bg-zinc-800 dark:bg-zinc-200"
+                      )}
+                    />
+                    <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-550 uppercase mt-1">
+                      {bar.day}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </DashboardCard>
 
+            {/* Lower Summary Cards composed in DashboardCards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              <Card className="border border-text-muted/15 bg-surface p-3.5 flex items-start gap-3 shadow-low">
-                <div className="p-2 rounded-lg bg-secondary/10 text-secondary shrink-0">
-                  <Award className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider block">Best Selling Catalog</span>
-                  <h4 className="font-bold text-xs text-text-primary mt-1">{bestSeller}</h4>
-                  <p className="text-[10px] text-text-muted mt-0.5">Generates 64% of total customer orders.</p>
-                </div>
-              </Card>
-
-              {lowStockProducts.length > 0 && (
-                <Card className="border border-secondary/20 bg-secondary/5 p-3.5 flex items-start gap-3 shadow-low">
-                  <div className="p-2 rounded-lg bg-secondary/10 text-secondary shrink-0 animate-bounce">
-                    <AlertTriangle className="h-4.5 w-4.5" />
+              <DashboardCard className="bg-zinc-50/50 dark:bg-zinc-900/10">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/20 shrink-0">
+                    <Award className="h-4.5 w-4.5" />
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold text-secondary uppercase tracking-wider block">Inventory Low Stock Alert</span>
-                    <h4 className="font-bold text-xs text-text-primary mt-1">{lowStockProducts.length} Items Running Low</h4>
-                    <p className="text-[10px] text-text-muted mt-0.5">Please refill stocks to avoid catalog shortages.</p>
+                    <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">Best Selling Catalog</span>
+                    <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 mt-1">{bestSeller}</h4>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Generates 64% of total customer orders.</p>
                   </div>
-                </Card>
+                </div>
+              </DashboardCard>
+
+              {lowStockProducts.length > 0 && (
+                <DashboardCard className="border-amber-200/50 bg-amber-50/20 dark:border-amber-900/30 dark:bg-amber-950/10">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/20 shrink-0 animate-bounce">
+                      <AlertTriangle className="h-4.5 w-4.5" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-bold text-amber-600 dark:text-amber-450 uppercase tracking-wider block">Inventory Low Stock Alert</span>
+                      <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 mt-1">{lowStockProducts.length} Items Running Low</h4>
+                      <p className="text-[10px] text-zinc-500 mt-0.5">Please refill stocks to avoid catalog shortages.</p>
+                    </div>
+                  </div>
+                </DashboardCard>
               )}
             </div>
           </motion.div>
@@ -327,60 +339,75 @@ export default function MerchantView() {
             className="space-y-4"
           >
             <div className="flex justify-between items-center px-0.5">
-              <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
-                Store Listings ({products.length})
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Store Listings ({filteredProducts.length})
               </span>
-              <Button onClick={handleOpenAddProduct} className="h-8.5 text-[10px] px-3 font-bold flex items-center gap-1 shadow-low">
+              <Button onClick={handleOpenAddProduct} className="h-8.5 text-[10px] px-3 font-bold flex items-center gap-1 shadow-sm rounded-lg">
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Product</span>
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {products.map((prod) => (
-                <Card key={prod.id} className="overflow-hidden border border-text-muted/15 shadow-low flex">
-                  {prod.imageUrl && (
-                    <img
-                      src={prod.imageUrl}
-                      alt={prod.title}
-                      className="w-20 object-cover border-r border-text-muted/10 shrink-0"
-                    />
-                  )}
-                  <div className="p-3 flex-1 flex flex-col justify-between min-w-0">
-                    <div>
-                      <h4 className="font-bold text-xs text-text-primary truncate">{prod.title}</h4>
-                      <p className="text-[10px] text-text-muted mt-0.5">Rp {prod.price.toLocaleString("id-ID")}</p>
-                    </div>
+            {/* SearchBar inside inventory */}
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search product listings by title..."
+            />
 
-                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-text-muted/5">
-                      <span className={cn(
-                        "text-[9px] font-bold px-1.5 py-0.25 rounded uppercase tracking-wider border",
-                        prod.stock < 15
-                          ? "bg-secondary/10 border-secondary/15 text-secondary"
-                          : "bg-success/10 border-success/15 text-success"
-                      )}>
-                        Stock: {prod.stock}
-                      </span>
+            {filteredProducts.length === 0 ? (
+              <div className="p-12 text-center border border-dashed border-zinc-200 rounded-xl text-zinc-450 text-xs dark:border-zinc-800">
+                No matching product listings found
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredProducts.map((prod) => (
+                  <DashboardCard key={prod.id} className="overflow-hidden p-0 flex">
+                    {prod.imageUrl && (
+                      <img
+                        src={prod.imageUrl}
+                        alt={prod.title}
+                        className="w-20 object-cover border-r border-zinc-200 dark:border-zinc-850 shrink-0"
+                      />
+                    )}
+                    <div className="p-3 flex-1 flex flex-col justify-between min-w-0">
+                      <div>
+                        <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-150 truncate">{prod.title}</h4>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Rp {prod.price.toLocaleString("id-ID")}</p>
+                      </div>
 
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleOpenEditProduct(prod)}
-                          className="p-1 rounded hover:bg-primary/10 text-primary transition-all"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(prod.id, prod.title)}
-                          className="p-1 rounded hover:bg-secondary/10 text-secondary transition-all"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                      <div className="flex justify-between items-center mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-900">
+                        <span className={cn(
+                          "text-[9px] font-bold px-1.5 py-0.25 rounded uppercase tracking-wider border",
+                          prod.stock < 15
+                            ? "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-400"
+                            : "bg-emerald-50 border-emerald-250 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-450"
+                        )}>
+                          Stock: {prod.stock}
+                        </span>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenEditProduct(prod)}
+                            className="p-1 rounded hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 transition-all"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTrigger(prod.id, prod.title)}
+                            className="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-550 transition-all"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </DashboardCard>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -393,26 +420,26 @@ export default function MerchantView() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-3"
           >
-            <span className="text-xs font-bold text-text-muted uppercase tracking-wider block px-0.5">
+            <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block px-0.5">
               Client Shipment Orders
             </span>
 
             <div className="space-y-3">
               {orders.map((ord) => (
-                <Card key={ord.id} className="border border-text-muted/15 shadow-low p-4 space-y-3">
-                  <div className="flex justify-between items-center border-b border-text-muted/5 pb-2">
+                <DashboardCard key={ord.id} className="p-4 space-y-3">
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
                     <div>
-                      <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Order ID</span>
-                      <p className="text-xs font-mono font-bold text-text-primary mt-0.5">{ord.id}</p>
+                      <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Order ID</span>
+                      <p className="text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">{ord.id}</p>
                     </div>
                     <div>
                       {ord.status === "pending" ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full uppercase tracking-wider border border-secondary/15">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-250 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900">
                           <Clock className="w-3 h-3" />
                           <span>Pending</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full uppercase tracking-wider border border-success/15">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-emerald-250 dark:bg-emerald-950/20 dark:text-emerald-450 dark:border-emerald-900">
                           <CheckCircle className="w-3 h-3" />
                           <span>Shipped</span>
                         </span>
@@ -422,90 +449,105 @@ export default function MerchantView() {
 
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-text-muted">Item / Qty</span>
-                      <span className="font-semibold text-text-primary">{ord.productTitle} x{ord.quantity}</span>
+                      <span className="text-zinc-500">Item / Qty</span>
+                      <span className="font-bold text-zinc-800 dark:text-zinc-100">{ord.productTitle} x{ord.quantity}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-muted">Customer Name</span>
-                      <span className="font-semibold text-text-primary">{ord.customerName}</span>
+                      <span className="text-zinc-500">Customer Name</span>
+                      <span className="font-bold text-zinc-800 dark:text-zinc-100">{ord.customerName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-muted">Ship Address</span>
-                      <span className="font-semibold text-text-primary text-right truncate max-w-[200px]">{ord.customerAddress}</span>
+                      <span className="text-zinc-500">Ship Address</span>
+                      <span className="font-bold text-zinc-800 dark:text-zinc-100 text-right truncate max-w-[200px]">{ord.customerAddress}</span>
                     </div>
-                    <div className="flex justify-between border-t border-text-muted/5 pt-1.5">
-                      <span className="text-text-muted">Grand Total</span>
-                      <span className="font-bold text-primary">Rp {ord.totalAmount.toLocaleString("id-ID")}</span>
+                    <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-900 pt-1.5">
+                      <span className="text-zinc-500 font-semibold">Grand Total</span>
+                      <span className="font-extrabold text-primary">Rp {ord.totalAmount.toLocaleString("id-ID")}</span>
                     </div>
                   </div>
 
                   {ord.status === "pending" && (
                     <Button
                       onClick={() => handleShipOrder(ord.id, ord.customerName)}
-                      className="w-full h-8.5 text-[10px] font-bold mt-2 flex items-center justify-center gap-1 shadow-low"
+                      className="w-full h-9 text-[10px] font-bold mt-2 flex items-center justify-center gap-1 shadow-sm rounded-lg"
                     >
                       <Truck className="h-3.5 w-3.5" />
                       <span>Dispatch Shipment Courier</span>
                     </Button>
                   )}
-                </Card>
+                </DashboardCard>
               ))}
             </div>
           </motion.div>
         )}
-
       </AnimatePresence>
 
-      {/* CRUD Custom Dialog */}
-      <CustomDialog onClose={() => setIsProductDialogOpen(false)} title={editingProduct ? "Edit Product Listing" : "Add New Product Listing"} isOpen={isProductDialogOpen}>
+      {/* CRUD Product Custom Dialog */}
+      <CustomDialog
+        onClose={() => setIsProductDialogOpen(false)}
+        title={editingProduct ? "Edit Product Listing" : "Add New Product Listing"}
+        isOpen={isProductDialogOpen}
+      >
         <form onSubmit={handleProductSubmit} className="space-y-3.5">
           <div className="space-y-1">
-            <label className="text-[9px] font-bold text-text-muted uppercase">Product Title</label>
+            <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Product Title</label>
             <Input
               required
               value={prodTitle}
               onChange={(e) => setProdTitle(e.target.value)}
               placeholder="e.g. Bandung Cheese Roll"
-              className="h-9 text-xs border-text-muted/15"
+              className="h-9 text-xs border-zinc-200 dark:border-zinc-800"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[9px] font-bold text-text-muted uppercase">Price (Rp)</label>
+            <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Price (Rp)</label>
             <Input
               required
               type="number"
               value={prodPrice}
               onChange={(e) => setProdPrice(e.target.value)}
               placeholder="e.g. 25000"
-              className="h-9 text-xs border-text-muted/15"
+              className="h-9 text-xs border-zinc-200 dark:border-zinc-800"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[9px] font-bold text-text-muted uppercase">Stock Quantity</label>
+            <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Stock Quantity</label>
             <Input
               required
               type="number"
               value={prodStock}
               onChange={(e) => setProdStock(e.target.value)}
               placeholder="e.g. 50"
-              className="h-9 text-xs border-text-muted/15"
+              className="h-9 text-xs border-zinc-200 dark:border-zinc-800"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[9px] font-bold text-text-muted uppercase">Image URL</label>
+            <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Image URL</label>
             <Input
               value={prodImageUrl}
               onChange={(e) => setProdImageUrl(e.target.value)}
               placeholder="Image path link..."
-              className="h-9 text-xs border-text-muted/15"
+              className="h-9 text-xs border-zinc-200 dark:border-zinc-800"
             />
           </div>
-          <Button type="submit" className="w-full h-9.5 text-xs font-bold mt-2 shadow-low">
+          <Button type="submit" className="w-full h-9.5 text-xs font-bold mt-2 shadow-sm rounded-lg">
             {editingProduct ? "Apply Listing Changes" : "Create & Post to Feed"}
           </Button>
         </form>
       </CustomDialog>
 
+      {/* Reusable Delete ConfirmationDialog */}
+      {productToDelete && (
+        <ConfirmationDialog
+          isOpen={!!productToDelete}
+          onClose={() => setProductToDelete(null)}
+          title="Delete Product Listing"
+          description={`Are you sure you want to delete "${productToDelete.title}"? This action will permanently remove this listing from your store catalog and feed records.`}
+          confirmLabel="Delete Listing"
+          type="danger"
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </div>
   );
 }

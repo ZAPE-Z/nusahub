@@ -22,7 +22,31 @@ export default function ChatBubble({
   onReplyMessage,
 }: ChatBubbleProps) {
   const timeStr = formatShortTime(message.timestamp);
-  const formattedHtml = formatMessageText(message.text);
+
+  const renderMessageText = (text: string) => {
+    if (!text) return null;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, index) => {
+      if (/^https?:\/\//.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              "underline break-all hover:opacity-80 transition-opacity",
+              isSelf ? "text-white font-semibold" : "text-secondary"
+            )}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
 
   return (
     <div
@@ -53,10 +77,9 @@ export default function ChatBubble({
           </div>
         )}
 
-        <div
-          dangerouslySetInnerHTML={{ __html: formattedHtml }}
-          className="space-y-1"
-        />
+        <div className="space-y-1 whitespace-pre-wrap">
+          {renderMessageText(message.text)}
+        </div>
 
         {/* Embedded product card inside the bubble */}
         {message.productRef && (

@@ -8,6 +8,7 @@ import UnreadBadge from "./UnreadBadge";
 import { Pin, Trash } from "lucide-react";
 import { formatShortTime } from "@/lib/chat/dateFormatter";
 import { cn } from "@/lib/utils";
+import { ConfirmationDialog } from "@/components/shared";
 
 interface ConversationCardProps {
   conversation: Conversation;
@@ -23,6 +24,8 @@ export default function ConversationCard({
   const { participant, messages } = conversation;
   const { isPinned, pin, deleteChat } = useConversation(conversation.id);
 
+  const [showConfirm, setShowConfirm] = React.useState(false);
+
   const lastMessage = messages[messages.length - 1];
   const unreadCount = messages.filter((m) => !m.isRead && m.senderId !== "user-1").length;
 
@@ -33,13 +36,26 @@ export default function ConversationCard({
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm(`Delete conversation with ${participant.name}?`)) {
-      deleteChat();
-    }
+    setShowConfirm(true);
   };
 
   return (
-    <div
+    <>
+      {showConfirm && (
+        <ConfirmationDialog
+          isOpen={showConfirm}
+          onClose={() => setShowConfirm(false)}
+          title="Delete Conversation"
+          description={`Are you sure you want to delete your conversation with ${participant.name}? This will clear all messages permanently.`}
+          confirmLabel="Delete Conversation"
+          type="danger"
+          onConfirm={() => {
+            deleteChat();
+            setShowConfirm(false);
+          }}
+        />
+      )}
+      <div
       onClick={onSelect}
       className={cn(
         "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all border border-transparent shadow-low select-none relative group active:scale-[0.99] hover:bg-primary/5",
@@ -107,5 +123,6 @@ export default function ConversationCard({
         </button>
       </div>
     </div>
+    </>
   );
 }

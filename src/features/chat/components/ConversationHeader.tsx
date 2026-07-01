@@ -7,6 +7,7 @@ import { ChevronLeft, Pin, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useChatStore } from "@/store/chatStore";
 import { cn } from "@/lib/utils";
+import { ConfirmationDialog } from "@/components/shared";
 
 interface ConversationHeaderProps {
   chatId: string;
@@ -16,6 +17,7 @@ export default function ConversationHeader({ chatId }: ConversationHeaderProps) 
   const router = useRouter();
   const chatStore = useChatStore();
   const { conversation, isPinned, pin, deleteChat } = useConversation(chatId);
+  const [showConfirm, setShowConfirm] = React.useState(false);
 
   if (!conversation) return null;
   const { participant } = conversation;
@@ -30,14 +32,27 @@ export default function ConversationHeader({ chatId }: ConversationHeaderProps) 
   };
 
   const handleDelete = () => {
-    if (confirm(`Delete conversation with ${participant.name}?`)) {
-      deleteChat();
-      handleBack();
-    }
+    setShowConfirm(true);
   };
 
   return (
-    <div className="flex-1 flex items-center justify-between h-full w-full">
+    <>
+      {showConfirm && (
+        <ConfirmationDialog
+          isOpen={showConfirm}
+          onClose={() => setShowConfirm(false)}
+          title="Delete Conversation"
+          description={`Are you sure you want to delete your conversation with ${participant.name}? All message logs will be permanently deleted.`}
+          confirmLabel="Delete Conversation"
+          type="danger"
+          onConfirm={() => {
+            deleteChat();
+            setShowConfirm(false);
+            handleBack();
+          }}
+        />
+      )}
+      <div className="flex-1 flex items-center justify-between h-full w-full">
       {/* Left Back Arrow and User Bio */}
       <div className="flex items-center gap-2 min-w-0">
         <button
@@ -88,5 +103,6 @@ export default function ConversationHeader({ chatId }: ConversationHeaderProps) 
         </button>
       </div>
     </div>
+    </>
   );
 }

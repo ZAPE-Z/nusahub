@@ -93,7 +93,7 @@ export default function AIResponseCard({ text, onRegenerate }: AIResponseCardPro
               const cleaned = processedLine.replace(/^[\s-*]+/, "").trim();
               return (
                 <ul key={lIdx} className="list-disc pl-5 my-0.5 space-y-1">
-                  <li dangerouslySetInnerHTML={{ __html: inlineMarkdown(cleaned) }} />
+                  <li>{parseMarkdownText(cleaned)}</li>
                 </ul>
               );
             }
@@ -102,7 +102,7 @@ export default function AIResponseCard({ text, onRegenerate }: AIResponseCardPro
               const cleaned = processedLine.replace(/^\d+\.\s+/, "").trim();
               return (
                 <ol key={lIdx} className="list-decimal pl-5 my-0.5 space-y-1">
-                  <li dangerouslySetInnerHTML={{ __html: inlineMarkdown(cleaned) }} />
+                  <li>{parseMarkdownText(cleaned)}</li>
                 </ol>
               );
             }
@@ -110,9 +110,10 @@ export default function AIResponseCard({ text, onRegenerate }: AIResponseCardPro
             return (
               <p
                 key={lIdx}
-                dangerouslySetInnerHTML={{ __html: inlineMarkdown(processedLine) }}
                 className={cn("min-h-[14px]", processedLine === "" && "h-2")}
-              />
+              >
+                {parseMarkdownText(processedLine)}
+              </p>
             );
           })}
         </div>
@@ -120,12 +121,40 @@ export default function AIResponseCard({ text, onRegenerate }: AIResponseCardPro
     });
   };
 
-  // Inline formatting helper (bold, italic, inline code)
-  const inlineMarkdown = (str: string): string => {
-    return str
-      .replace(/\*\*([\s\S]*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*([\s\S]*?)\*/g, "<em>$1</em>")
-      .replace(/`([\s\S]*?)`/g, '<code class="bg-text-muted/10 px-1 py-0.5 rounded text-[10px] font-mono">$1</code>');
+  // Safe inline formatting helper (bold, italic, inline code) returning React nodes
+  const parseMarkdownText = (str: string): React.ReactNode => {
+    if (!str) return "";
+    const tokens = str.split(/(\*\*|\*|`)/);
+    const result: React.ReactNode[] = [];
+    let isBold = false;
+    let isItalic = false;
+    let isCode = false;
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token === "**") {
+        isBold = !isBold;
+      } else if (token === "*") {
+        isItalic = !isItalic;
+      } else if (token === "`") {
+        isCode = !isCode;
+      } else if (token) {
+        if (isCode) {
+          result.push(
+            <code key={i} className="bg-text-muted/10 px-1 py-0.5 rounded text-[10px] font-mono">
+              {token}
+            </code>
+          );
+        } else if (isBold) {
+          result.push(<strong key={i}>{token}</strong>);
+        } else if (isItalic) {
+          result.push(<em key={i}>{token}</em>);
+        } else {
+          result.push(token);
+        }
+      }
+    }
+    return result;
   };
 
   return (
