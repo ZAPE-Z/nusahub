@@ -125,6 +125,68 @@ export class AddTaskAction implements AIAction {
   }
 }
 
+export class EcosystemConsoleAction implements AIAction {
+  id = "ecosystem-console";
+  description = "View stats or open consoles for Merchant, Creator, Wallet, Developer, and Workspace modules based on capabilities";
+
+  canHandle(prompt: string): boolean {
+    const p = prompt.toLowerCase();
+    return (
+      p.includes("merchant") ||
+      p.includes("creator") ||
+      p.includes("wallet") ||
+      p.includes("developer") ||
+      p.includes("workspace") ||
+      p.includes("toko") ||
+      p.includes("studio")
+    );
+  }
+
+  async execute(prompt: string, stores: AIActionStore): Promise<string> {
+    const p = prompt.toLowerCase();
+    const user = stores.appStore.getState().user;
+    if (!user) {
+      return "❌ You must be signed in to check capability statuses.";
+    }
+
+    const caps = user.capabilities;
+
+    if (p.includes("merchant") || p.includes("toko")) {
+      if (caps.merchant === "active") {
+        return `### 🏪 Merchant Center Status\n\n- **Status:** Active\n- **Earnings Today:** Rp 85.000\n- **Pending Orders:** 1 pending order\n- **Quick Link:** [Open Merchant Console](/merchant)\n\nWhat would you like me to do in your store?`;
+      } else {
+        return `⚠️ **Merchant Center Inactive**\n\nThe Merchant capability is not active on your account. You can check its onboarding status inside your [Account Dashboard](/profile).`;
+      }
+    }
+
+    if (p.includes("creator") || p.includes("studio")) {
+      if (caps.creator === "active") {
+        return `### 🎨 Creator Studio Status\n\n- **Status:** Active\n- **Earnings:** Rp 25.000\n- **Followers:** 124 followers\n- **Quick Link:** [Open Creator Studio](/creator)\n\nCreate a new post by typing *'Create post hello world'* or sell digital vectors!`;
+      } else {
+        return `⚠️ **Creator Studio Inactive**\n\nThe Creator capability is not active on your account. You can check its status inside your [Account Dashboard](/profile).`;
+      }
+    }
+
+    if (p.includes("wallet")) {
+      const balance = stores.walletStore.getState().getBalance();
+      return `### 💳 Wallet Dashboard\n\n- **Balance:** Rp ${balance.toLocaleString("id-ID")}\n- **Monthly Spending:** Rp 185.000\n- **Quick Actions:** [Open Wallet](/wallet)`;
+    }
+
+    if (p.includes("developer")) {
+      return `### 💻 Developer Center\n\n- **Status:** Coming Soon (Phase 3 Placeholder)\n- **Action:** Register widgets or mock API credentials in your [Developer Dashboard](/developer).`;
+    }
+
+    if (p.includes("workspace")) {
+      const tasks = stores.workspaceStore.getState().tasks;
+      const notes = stores.workspaceStore.getState().notes;
+      const activeCount = tasks.filter((t) => !t.completed).length;
+      return `### 📝 Workspace Overview\n\n- **Tasks:** ${activeCount} active tasks (${tasks.length} total)\n- **Notes:** ${notes.length} saved markdown notes\n- **Link:** [Open Workspace](/workspace)`;
+    }
+
+    return "### 🌟 Ecosystem Hub\n\nYou can query about Wallet, Workspace, Merchant, Creator, or Developer capabilities!";
+  }
+}
+
 export class GeneralChatAction implements AIAction {
   id = "general";
   description = "Warm conversational chatbot fallback";

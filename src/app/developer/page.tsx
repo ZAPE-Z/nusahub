@@ -1,11 +1,11 @@
 import React from "react";
-import WorkspaceView from "@/features/workspace/components/WorkspaceView";
+import DeveloperView from "@/features/developer/components/DeveloperView";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
-export default function WorkspacePage() {
+export default function DeveloperPage() {
   return (
     <ErrorBoundary>
-      <WorkspaceView />
+      <DeveloperView />
     </ErrorBoundary>
   );
 }

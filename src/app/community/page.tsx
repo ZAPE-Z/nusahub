@@ -1,11 +1,11 @@
 import React from "react";
-import WorkspaceView from "@/features/workspace/components/WorkspaceView";
+import CommunityView from "@/features/community/components/CommunityView";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
-export default function WorkspacePage() {
+export default function CommunityPage() {
   return (
     <ErrorBoundary>
-      <WorkspaceView />
+      <CommunityView />
     </ErrorBoundary>
   );
 }

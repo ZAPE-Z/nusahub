@@ -1,64 +1,47 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MOCK_POSTS, MOCK_NOTIFICATIONS } from "../mock";
-import { Post, NotificationAlert } from "../types";
+import { useFeedStore } from "@/store/feedStore";
 
 export function useHomeData() {
+  const feedStore = useFeedStore();
   const queryClient = useQueryClient();
 
-  const postsQuery = useQuery<Post[], Error>({
-    queryKey: ["home-posts"],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      return MOCK_POSTS;
-    },
+  // Wrapping Zustand store lists in TanStack Query for caching and loading states consistency
+  const postsQuery = useQuery({
+    queryKey: ["home-posts", feedStore.posts],
+    queryFn: () => feedStore.posts,
   });
 
-  const alertsQuery = useQuery<NotificationAlert[], Error>({
-    queryKey: ["home-alerts"],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      return MOCK_NOTIFICATIONS;
-    },
+  const alertsQuery = useQuery({
+    queryKey: ["home-alerts", feedStore.notifications],
+    queryFn: () => feedStore.notifications,
   });
 
-  const likePostMutation = useMutation<void, Error, string>({
-    mutationFn: async (postId) => {
-      // Simulate remote update
-      await new Promise((resolve) => setTimeout(resolve, 300));
-    },
-    onSuccess: (_, postId) => {
-      queryClient.setQueryData<Post[]>(["home-posts"], (old) => {
-        if (!old) return [];
-        return old.map((post) => {
-          if (post.id === postId) {
-            return { ...post, likeCount: post.likeCount + 1 };
-          }
-          return post;
-        });
-      });
-    },
-  });
-
-  const markAllReadMutation = useMutation<void, Error, void>({
-    mutationFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
+  const likePostMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      feedStore.likePost(postId);
     },
     onSuccess: () => {
-      queryClient.setQueryData<NotificationAlert[]>(["home-alerts"], (old) => {
-        if (!old) return [];
-        return old.map((alert) => ({ ...alert, isRead: true }));
-      });
+      queryClient.invalidateQueries({ queryKey: ["home-posts"] });
+    }
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      feedStore.markAllNotificationsAsRead();
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["home-alerts"] });
+    }
   });
 
   return {
     posts: postsQuery.data || [],
     isLoadingPosts: postsQuery.isLoading,
-    postsError: postsQuery.error ? postsQuery.error.message : null,
+    postsError: null,
     refetchPosts: postsQuery.refetch,
     alerts: alertsQuery.data || [],
     isLoadingAlerts: alertsQuery.isLoading,
-    alertsError: alertsQuery.error ? alertsQuery.error.message : null,
+    alertsError: null,
     refetchAlerts: alertsQuery.refetch,
     likePost: likePostMutation.mutate,
     markAllRead: markAllReadMutation.mutate,

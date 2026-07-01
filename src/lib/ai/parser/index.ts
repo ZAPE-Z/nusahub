@@ -3,6 +3,7 @@ import {
   CheckBalanceAction,
   TransferAction,
   AddTaskAction,
+  EcosystemConsoleAction,
   GeneralChatAction,
 } from "../actions";
 
@@ -10,6 +11,7 @@ const ACTIONS: AIAction[] = [
   new CheckBalanceAction(),
   new TransferAction(),
   new AddTaskAction(),
+  new EcosystemConsoleAction(),
 ];
 
 /**

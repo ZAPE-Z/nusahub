@@ -1,11 +1,11 @@
 import React from "react";
-import WorkspaceView from "@/features/workspace/components/WorkspaceView";
+import MerchantView from "@/features/merchant/components/MerchantView";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
-export default function WorkspacePage() {
+export default function MerchantPage() {
   return (
     <ErrorBoundary>
-      <WorkspaceView />
+      <MerchantView />
     </ErrorBoundary>
   );
 }
